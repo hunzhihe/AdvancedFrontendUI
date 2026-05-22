@@ -23,7 +23,7 @@ public:
 protected:
 	
 	UFUNCTION(BlueprintCallable)
-	void RegisterWidgetStack(UPARAM(meta=(Category = "Frontend.WidgetStack")) const FGameplayTag& WidgetStackTag,UCommonActivatableWidgetContainerBase* WidgetStack);
+	void RegisterWidgetStack(UPARAM(meta=(Categories = "Frontend.WidgetStack"))FGameplayTag WidgetStackTag,UCommonActivatableWidgetContainerBase* WidgetStack);
 
 	// UFUNCTION(BlueprintCallable)
 	// void UnregisterWidgetStack(const FGameplayTag& WidgetStackTag);

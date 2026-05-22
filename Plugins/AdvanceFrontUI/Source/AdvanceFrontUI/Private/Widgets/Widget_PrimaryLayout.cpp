@@ -19,7 +19,7 @@ UCommonActivatableWidgetContainerBase *UWidget_PrimaryLayout::FindRegisteredWidg
     return nullptr;
 }
 
-void UWidget_PrimaryLayout::RegisterWidgetStack(UPARAM(meta=(Category = "Frontend.WidgetStack"))const FGameplayTag &WidgetStackTag, UCommonActivatableWidgetContainerBase *WidgetStack)
+void UWidget_PrimaryLayout::RegisterWidgetStack(UPARAM(meta=(Categories = "Frontend.WidgetStack"))FGameplayTag WidgetStackTag, UCommonActivatableWidgetContainerBase *WidgetStack)
 {
     if (!IsDesignTime())
     {

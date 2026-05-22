@@ -12,7 +12,7 @@ namespace FrontendGameplayTags
 	// For example: GameplayTag MyTag = FGameplayTag::RequestGameplayTag("MyGame.MyTag");
 
 	ADVANCEDFRONTENDUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_WidgetStack_Modal);
-	ADVANCEDFRONTENDUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_WidgetStack_GameMode);
+	ADVANCEDFRONTENDUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_WidgetStack_GameMenu);
 	ADVANCEDFRONTENDUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_WidgetStack_GameHud);
 	ADVANCEDFRONTENDUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_WidgetStack_Frontend);
 }
