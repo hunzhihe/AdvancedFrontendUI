@@ -2,6 +2,7 @@
 
 
 #include "Widgets/Widget_PrimaryLayout.h"
+#include "FrontendUIDebugHelper.h"
 
 UCommonActivatableWidgetContainerBase *UWidget_PrimaryLayout::FindRegisteredWidgetStackByTag(const FGameplayTag &WidgetStackTag) const
 {
@@ -26,14 +27,16 @@ void UWidget_PrimaryLayout::RegisterWidgetStack(UPARAM(meta=(Categories = "Front
        if (!RegisteredWidgetStackMap.Contains(WidgetStackTag))
        {
         RegisteredWidgetStackMap.Add(WidgetStackTag, WidgetStack);
+
+		//FrontendUIDebugHelper::Log(FString::Printf(TEXT("UWidget_PrimaryLayout::RegisterWidgetStack() WidgetStackTag: %s registered in RegisteredWidgetStackMap"), *WidgetStackTag.ToString()));
        }
-       else
-       {
-        UE_LOG(LogTemp, Warning, TEXT("UWidget_PrimaryLayout::RegisterWidgetStack() WidgetStackTag: %s already exists in RegisteredWidgetStackMap"), *WidgetStackTag.ToString());
-       }
-       {
-        /* code */
-       }
+       //else
+       //{
+       // FrontendUIDebugHelper::Log(FString::Printf(TEXT("UWidget_PrimaryLayout::RegisterWidgetStack() WidgetStackTag: %s already exists in RegisteredWidgetStackMap"), *WidgetStackTag.ToString()), -1, FColor::Red );
+       //}
+       //{
+       // /* code */
+       //}
        
     }
     
