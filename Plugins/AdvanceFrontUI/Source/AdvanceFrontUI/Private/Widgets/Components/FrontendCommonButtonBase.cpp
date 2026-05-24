@@ -4,6 +4,7 @@
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "CommonTextBlock.h"
 
+
 void UFrontendCommonButtonBase::SetButtonText(FText NewText)
 {
     if(CommonTextBlock_ButtonText && !NewText.IsEmpty())
@@ -17,5 +18,15 @@ void UFrontendCommonButtonBase::NativePreConstruct()
     Super::NativePreConstruct();
 
     SetButtonText(ButtonDisplayText);
+}
+void UFrontendCommonButtonBase::NativeOnCurrentTextStyleChanged()
+{
+    Super::NativeOnCurrentTextStyleChanged();
+
+    if (CommonTextBlock_ButtonText)
+    {
+        CommonTextBlock_ButtonText->SetStyle(GetCurrentTextStyleClass());
+    }
     
+
 }

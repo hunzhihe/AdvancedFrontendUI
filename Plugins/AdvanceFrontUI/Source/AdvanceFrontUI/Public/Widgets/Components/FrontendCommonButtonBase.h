@@ -20,8 +20,14 @@ class ADVANCEFRONTUI_API UFrontendCommonButtonBase : public UCommonButtonBase
 	void SetButtonText(FText NewText);
 
 	private:
-
+    
+	//UUserWidget Interface
 	virtual void NativePreConstruct() override;
+	//UUserWidget Interface
+
+	//UCommonButtonBase Interface
+    virtual void NativeOnCurrentTextStyleChanged() override;
+    //UCommonButtonBase Interface
 
 	//Bound Widgets
     UPROPERTY(meta = (BindWidgetOptional))
