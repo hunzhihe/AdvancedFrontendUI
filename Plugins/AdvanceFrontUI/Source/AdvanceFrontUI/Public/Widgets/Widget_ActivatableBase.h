@@ -6,6 +6,8 @@
 #include "CommonActivatableWidget.h"
 #include "Widget_ActivatableBase.generated.h"
 
+
+class AFrontendPlayerController;
 /**
  * 
  */
@@ -13,5 +15,13 @@ UCLASS(Abstract, BlueprintType, meta = (DisableNativeTick))
 class ADVANCEFRONTUI_API UWidget_ActivatableBase : public UCommonActivatableWidget
 {
 	GENERATED_BODY()
+
+protected:
+    UFUNCTION(BlueprintPure, Category = "AdvanceFrontUI|ActivatableBase")
+	AFrontendPlayerController* GetOwningFrontendPlayerController();
 	
+private:
+    TWeakObjectPtr<AFrontendPlayerController> CacheOwningPlayerController;
+    
+
 };

@@ -24,12 +24,13 @@ void UAsyncActionSoftWidget::Activate()
 
                 if (bCachedFocusOnNewlyPushedWidget)
                 {
-                    if (UWidget* DesiredFocusWidget = CreatedWidget->GetDesiredFocusWidget())
+                    if(CreatedWidget->IsFocusable())
                     {
-                        DesiredFocusWidget->SetFocus();
+                       CreatedWidget->SetFocus();
                     }
+                      
+                    //CreatedWidget->SetKeyboardFocus();
                 }
-
 				// 完成后自动结束节点生命周期，避免内存泄漏
 				SetReadyToDestroy();
 			}

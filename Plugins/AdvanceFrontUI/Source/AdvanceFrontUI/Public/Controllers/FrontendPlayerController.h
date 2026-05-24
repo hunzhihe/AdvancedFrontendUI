@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class ADVANCEDFRONTENDUI_API AFrontendPlayerController : public APlayerController
+class ADVANCEFRONTUI_API AFrontendPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	protected:
