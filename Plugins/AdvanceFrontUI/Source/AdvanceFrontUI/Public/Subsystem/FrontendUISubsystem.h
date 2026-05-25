@@ -11,6 +11,7 @@
 
 class UWidget_PrimaryLayout;
 struct FGameplayTag;
+class UFrontendCommonButtonBase;
 
 /**
  * 异步推送控件时的状态枚举
@@ -21,6 +22,10 @@ enum class EAsyncPushWidgetState : uint8
     OnCreatedBeforePush,   // 控件已创建，但在推入堆栈之前
     AfterPush              // 控件已成功推入堆栈之后
 };
+
+//多播委托，
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnButtonDescriptionTextUpdatedDelegate, UFrontendCommonButtonBase*, Button, FText, DescriptionText);
+
 
 /**
  * 前端 UI 子系统（游戏实例子系统）
@@ -65,6 +70,11 @@ public:
     void PushSoftWidgetToStackAsync(const FGameplayTag& WidgetStackTag,
         TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClassPtr,
         TFunction<void(EAsyncPushWidgetState, UWidget_ActivatableBase*)> AsyncPushStateCallBack);
+
+
+    /** 当按钮描述文本更新时广播的委托，参数为更新的按钮和新的描述文本 */
+    UPROPERTY(BlueprintAssignable)
+    FOnButtonDescriptionTextUpdatedDelegate OnButtonDescriptionTextUpdated;
 
 private:
     /** 已创建的主布局控件指针（不参与序列化，运行时临时持有） */

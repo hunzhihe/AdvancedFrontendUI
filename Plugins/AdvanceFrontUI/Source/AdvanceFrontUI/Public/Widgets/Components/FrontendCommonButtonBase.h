@@ -27,6 +27,8 @@ class ADVANCEFRONTUI_API UFrontendCommonButtonBase : public UCommonButtonBase
 
 	//UCommonButtonBase Interface
     virtual void NativeOnCurrentTextStyleChanged() override;
+	virtual void NativeOnHovered() override;
+	virtual void NativeOnUnhovered() override;
     //UCommonButtonBase Interface
 
 	//Bound Widgets
