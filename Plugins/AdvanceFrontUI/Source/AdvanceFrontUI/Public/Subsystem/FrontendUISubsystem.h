@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include <Widgets/Widget_ActivatableBase.h>
+#include "FrontendTypes/FrontendEnumType.h"
 #include "FrontendUISubsystem.generated.h"
 
 
@@ -70,6 +71,11 @@ public:
     void PushSoftWidgetToStackAsync(const FGameplayTag& WidgetStackTag,
         TSoftClassPtr<UWidget_ActivatableBase> SoftWidgetClassPtr,
         TFunction<void(EAsyncPushWidgetState, UWidget_ActivatableBase*)> AsyncPushStateCallBack);
+
+
+    void PushConfirmScreenToModelStackAsync(
+        EConfirmScreenType ConfirmScreenType,const FText& ScreenTitle, 
+        const FText& ScreenMessage, TFunction<void(EConfirmScreenButtonType)> InButtonClickedCallback);
 
 
     /** 当按钮描述文本更新时广播的委托，参数为更新的按钮和新的描述文本 */
