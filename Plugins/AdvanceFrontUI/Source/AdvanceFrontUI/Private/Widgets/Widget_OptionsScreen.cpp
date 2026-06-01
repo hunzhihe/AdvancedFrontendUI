@@ -5,6 +5,10 @@
 #include "Input/CommonUIInputTypes.h"
 #include "ICommonInputModule.h"
 #include "FrontendUIDebugHelper.h"
+#include "Widgets/Options/OptionsDataRegistry.h"
+#include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
+#include "Widgets/Components/FrontendTabListWidgetBase.h"
+
 
 void UWidget_OptionsScreen::NativeOnInitialized()
 {
@@ -31,6 +35,42 @@ void UWidget_OptionsScreen::NativeOnInitialized()
     
    
 }
+
+void UWidget_OptionsScreen::NativeOnActivated()
+{
+
+    Super::NativeOnActivated();
+
+    for(UListDataObject_Collection* TabCollection : GetOrCreateDataRegistry()->GetRegisteredOptionsTabCollections())
+    {
+       if(!TabCollection)
+       {
+          continue;
+       }
+       const FName TabID = TabCollection->GetDataID();
+       if (TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabID)!=nullptr)
+       {
+           continue;
+       }
+       TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
+    } 
+    
+
+
+}
+UOptionsDataRegistry *UWidget_OptionsScreen::GetOrCreateDataRegistry()
+{
+    if(!CreatedOwningDataRegistry)
+    {
+       CreatedOwningDataRegistry = NewObject<UOptionsDataRegistry>();
+       CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
+    }
+
+
+    return CreatedOwningDataRegistry;
+}
+
+
 void UWidget_OptionsScreen::OnResetBoundActionTriggered()
 {
     FrontendUIDebugHelper::Log("Reset to default action triggered.");

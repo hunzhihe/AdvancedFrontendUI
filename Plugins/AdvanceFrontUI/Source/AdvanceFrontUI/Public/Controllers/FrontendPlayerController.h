@@ -15,6 +15,7 @@ class ADVANCEFRONTUI_API AFrontendPlayerController : public APlayerController
 	GENERATED_BODY()
 	protected:
 
+	//virtual bool InputKey(FKey Key, EInputEvent Event, float AmountDepressed, bool bGamepad) override;
 	//
 	virtual void OnPossess(APawn* InPawn) override;
 };

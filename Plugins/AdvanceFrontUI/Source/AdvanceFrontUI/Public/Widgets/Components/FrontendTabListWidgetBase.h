@@ -17,6 +17,9 @@ class ADVANCEFRONTUI_API UFrontendTabListWidgetBase : public UCommonTabListWidge
 {
 	GENERATED_BODY()
 
+public:
+	void RequestRegisterTab(const FName& InTabID, const FText& InTabDisplayName);
+
 private:
 
 #if WITH_EDITOR	

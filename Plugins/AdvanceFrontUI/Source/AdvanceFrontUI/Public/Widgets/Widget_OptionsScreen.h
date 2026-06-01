@@ -6,6 +6,9 @@
 #include "Widgets/Widget_ActivatableBase.h"
 #include "Widget_OptionsScreen.generated.h"
 
+
+class UOptionsDataRegistry;
+class UFrontendTabListWidgetBase;
 /**
  * 
  */
@@ -20,10 +23,24 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
     //End UUserWidget Interface
 
 
+	//Begin UCommonActivatableWidget Interface
+	virtual void NativeOnActivated() override;
+    //end  UCommonActivatableWidget Interface
+
 	private:
+
+	    UOptionsDataRegistry* GetOrCreateDataRegistry();
 
 	    void OnResetBoundActionTriggered();
 		void OnBackBoundActionTriggered();
+
+
+		//Bound Widgets
+		UPROPERTY(meta = (BindWidget))
+		UFrontendTabListWidgetBase* TabListWidget_OptionsTabs;
+
+		UPROPERTY(Transient)
+		UOptionsDataRegistry* CreatedOwningDataRegistry;
 
 		UPROPERTY(EditDefaultsOnly, Category = "Frontend Options Screen", meta = (RowType = "/Script/CommonUI.CommonInputActionDataBase"))
 		FDataTableRowHandle ResetToDefaultAction;

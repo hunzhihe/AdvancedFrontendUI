@@ -8,6 +8,8 @@
 
 
 class UCommonTextBlock;
+class UFrontendUIButtonInternalBase;
+class SCommonButton;
 /**
  * 
  */
@@ -19,20 +21,25 @@ class ADVANCEFRONTUI_API UFrontendCommonButtonBase : public UCommonButtonBase
 	UFUNCTION(BlueprintCallable)
 	void SetButtonText(FText NewText);
 
-	private:
+private:
     
 	//UUserWidget Interface
 	virtual void NativePreConstruct() override;
 	//UUserWidget Interface
 
 	//UCommonButtonBase Interface
+	// 重写以使用我们自定义的内部按钮类
+	virtual UCommonButtonInternalBase* ConstructInternalButton() override;
     virtual void NativeOnCurrentTextStyleChanged() override;
 	virtual void NativeOnHovered() override;
 	virtual void NativeOnUnhovered() override;
+	  // 重写焦点接收事件，实现 "深度聚焦"
+	//virtual FReply NativeOnFocusReceived(const FGeometry& InGeometry, const FFocusEvent& InFocusEvent) override;
+
     //UCommonButtonBase Interface
 
 	//Bound Widgets
-    UPROPERTY(meta = (BindWidgetOptional))
+    UPROPERTY(BlueprintReadWrite,meta = (BindWidgetOptional,AllowPrivateAccess = "true"))
 	UCommonTextBlock* CommonTextBlock_ButtonText;
 	//Bound Widgets
 
@@ -44,4 +51,9 @@ class ADVANCEFRONTUI_API UFrontendCommonButtonBase : public UCommonButtonBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Frontend Common Button", meta = (AllowPrivateAccess = "true"))
     FText ButtonDiscriptionText;
+
+
+	UPROPERTY(Transient)
+	TObjectPtr<UFrontendUIButtonInternalBase> CachedInternalButton;
+
 };
