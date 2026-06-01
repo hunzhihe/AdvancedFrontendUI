@@ -14,7 +14,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Abstract)
 class ADVANCEFRONTUI_API UListDataObject_Base : public UObject
 {
 	GENERATED_BODY()

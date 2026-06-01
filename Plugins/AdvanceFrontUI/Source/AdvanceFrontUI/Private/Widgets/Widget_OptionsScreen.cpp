@@ -8,6 +8,7 @@
 #include "Widgets/Options/OptionsDataRegistry.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Components/FrontendTabListWidgetBase.h"
+#include "Widgets/Components/FrontendUICommonListView.h"
 
 
 void UWidget_OptionsScreen::NativeOnInitialized()
@@ -32,6 +33,8 @@ void UWidget_OptionsScreen::NativeOnInitialized()
             true,
             FSimpleDelegate::CreateUObject(this, &ThisClass::OnBackBoundActionTriggered))
        );
+
+	TabListWidget_OptionsTabs->OnTabSelected.AddUniqueDynamic(this, &ThisClass::OnOptionsTabSelected);
     
    
 }
@@ -79,4 +82,21 @@ void UWidget_OptionsScreen::OnBackBoundActionTriggered()
 {
     DeactivateWidget();
     FrontendUIDebugHelper::Log("Back action triggered on options screen.");
+}
+
+void UWidget_OptionsScreen::OnOptionsTabSelected(FName TabID)
+{
+    //FrontendUIDebugHelper::Log("Options tab selected: " + TabID.ToString());
+	TArray<UListDataObject_Base*> FoundListSourceItems = 
+        GetOrCreateDataRegistry()->GetListSourceItemsBySelectedTabID(TabID);
+
+	CommonListView_OptionsList->SetListItems(FoundListSourceItems);
+    CommonListView_OptionsList->RequestRefresh();
+
+    if (CommonListView_OptionsList->GetNumItems() !=0)
+    {
+        CommonListView_OptionsList->NavigateToIndex(0);
+		CommonListView_OptionsList->SetSelectedIndex(0);
+    }
+
 }

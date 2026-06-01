@@ -9,6 +9,7 @@
 
 class UOptionsDataRegistry;
 class UFrontendTabListWidgetBase;
+class UFrontendUICommonListView;
 /**
  * 
  */
@@ -34,10 +35,18 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 	    void OnResetBoundActionTriggered();
 		void OnBackBoundActionTriggered();
 
+		UFUNCTION()
+		void OnOptionsTabSelected(FName TabID);
+
 
 		//Bound Widgets
 		UPROPERTY(meta = (BindWidget))
 		UFrontendTabListWidgetBase* TabListWidget_OptionsTabs;
+
+		UPROPERTY(meta = (BindWidget))
+		UFrontendUICommonListView* CommonListView_OptionsList;
+
+		//BoundWidgets
 
 		UPROPERTY(Transient)
 		UOptionsDataRegistry* CreatedOwningDataRegistry;

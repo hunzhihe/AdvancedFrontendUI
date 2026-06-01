@@ -3,6 +3,8 @@
 
 #include "Widgets/Options/OptionsDataRegistry.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
+#include "Widgets/Options/DataObjects/ListDataObject_String.h"
+
 
 void UOptionsDataRegistry::InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPlayer)
 {
@@ -13,11 +15,42 @@ void UOptionsDataRegistry::InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPl
 
 }
 
+TArray<UListDataObject_Base*> UOptionsDataRegistry::GetListSourceItemsBySelectedTabID(const FName& InSelectedTabID) const
+{
+	UListDataObject_Collection* const* FoundTabCollectionPtr =  RegisteredOptionsTabCollections.FindByPredicate([InSelectedTabID](UListDataObject_Collection* AvailableTabCollection)->bool
+		{
+			return AvailableTabCollection->GetDataID() == InSelectedTabID;
+		});
+
+	checkf(FoundTabCollectionPtr,TEXT("No matching tab collection found for ID: %s"), *InSelectedTabID.ToString());
+	
+		UListDataObject_Collection* FoundTabCollection = *FoundTabCollectionPtr;
+		return FoundTabCollection->GetAllChildListData();
+	
+}
+
 void UOptionsDataRegistry::InitGameplayCollectionTab()
 {
 	UListDataObject_Collection* GameplayTabCollection = NewObject<UListDataObject_Collection>();
 	GameplayTabCollection->SetDataID(FName("GameplayTabCollection"));
 	GameplayTabCollection->SetDataDisplayName(FText::FromString(TEXT("Gameplay")));
+
+	//Game Difficulty
+	{
+		UListDataObject_String* GameDifficultyOption = NewObject<UListDataObject_String>();
+		GameDifficultyOption->SetDataID(FName("GameDifficultyOption"));
+		GameDifficultyOption->SetDataDisplayName(FText::FromString(TEXT("Game Difficulty")));
+
+		GameplayTabCollection->AddChildListData(GameDifficultyOption);
+	}
+	//Test Item
+	{
+		UListDataObject_String* TestItemOption = NewObject<UListDataObject_String>();
+		TestItemOption->SetDataID(FName("TestItemOption"));
+		TestItemOption->SetDataDisplayName(FText::FromString(TEXT("Test Item")));
+
+		GameplayTabCollection->AddChildListData(TestItemOption);
+	}
 
 	RegisteredOptionsTabCollections.Add(GameplayTabCollection);
 }

@@ -29,7 +29,9 @@ public class AdvanceFrontUI : ModuleRules
 				"GameplayTags",
 				"UMG",
 				"CommonUI",    // 添加这一行
+				"InputCore", // <--- 添加这一行
                 "CommonInput"
+
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
