@@ -5,10 +5,12 @@
 #include "CoreMinimal.h"
 #include "CommonUserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "FrontendTypes/FrontendEnumType.h"
 #include "Widget_ListEntry_Base.generated.h"
 
 
 class UCommonTextBlock;
+class UListDataObject_Base;
 /**
  * 
  */
@@ -23,6 +25,10 @@ protected:
 	virtual void NativeOnListItemObjectSet(UObject* ListItemObject) override;
 
 	//End IUserObjectListEntry Interface
+
+	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject);
+
+	virtual void OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason  ModifyReason);
 
 private:
 	//Bound Widgets

@@ -30,7 +30,8 @@ public class AdvanceFrontUI : ModuleRules
 				"UMG",
 				"CommonUI",    // 添加这一行
 				"InputCore", // <--- 添加这一行
-                "CommonInput"
+                "CommonInput",
+				"PropertyPath"
 
 				// ... add other public dependencies that you statically link with here ...
 			}

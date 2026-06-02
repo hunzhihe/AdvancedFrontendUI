@@ -9,6 +9,7 @@
 
 class UFrontendCommonButtonBase;
 class UFrontendCommonRotator;
+class UListDataObject_String;
 /**
  * 
  */
@@ -17,7 +18,25 @@ class ADVANCEFRONTUI_API UWidget_ListEntry_String : public UWidget_ListEntry_Bas
 {
 	GENERATED_BODY()
 
+protected:
+
+	//Begin UUserWidget Interface
+	virtual void NativeOnInitialized() override;
+	//End UUserWidget Interface
+
+
+
+	//Begin UWidget_ListEntry_Base interface
+	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject) override;
+	virtual void OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason  ModifyReason) override;
+	//End UWidget_ListEntry_Base interface
+
+
 private:
+
+	void OnPreviousOptionButtonClicked();
+	void OnNextOptionButtonClicked();
+
 	//Bound Widgets
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, AllowPrivateAccess = "true"))
 	UFrontendCommonButtonBase* CommonButton_PreviousOption;
@@ -28,5 +47,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget, AllowPrivateAccess = "true"))
 	UFrontendCommonButtonBase* CommonButton_NextOption;
 	//Bound Widgets
+
+	UPROPERTY(Transient)
+	UListDataObject_String* CachedOwningStringDataObject;
 	
 };
