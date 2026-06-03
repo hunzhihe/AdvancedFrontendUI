@@ -4,10 +4,17 @@
 #include "Widgets/Options/ListEntrys/Widget_ListEntry_Base.h"
 #include "Widgets/Options/ListDataObject_Base.h"
 #include "CommonTextBlock.h"
+#include "Components/ListView.h"
+
+void UWidget_ListEntry_Base::NativeOnListEntryWidgetHovered(bool bWasHovered)
+{
+	BP_OnListEntryWidgetHovered(bWasHovered, IsListItemSelected());
+}
 
 void UWidget_ListEntry_Base::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
+	SetVisibility(ESlateVisibility::Visible);
 
 	OnOwningListDataObjectSet(CastChecked<UListDataObject_Base>(ListItemObject));
 
@@ -31,4 +38,9 @@ void UWidget_ListEntry_Base::OnOwningListDataObjectSet(UListDataObject_Base* InL
 void UWidget_ListEntry_Base::OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason ModifyReason)
 {
 
+}
+
+void UWidget_ListEntry_Base::SelectThisListEntryWidget()
+{
+	CastChecked<UListView>(GetOwningListView())->SetSelectedItem(GetListItem());
 }

@@ -9,7 +9,8 @@
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Components/FrontendTabListWidgetBase.h"
 #include "Widgets/Components/FrontendUICommonListView.h"
-
+#include "FrontendSettings/FrontendUIGameUserSettings.h"
+#include "Widgets/Options/ListEntrys/Widget_ListEntry_Base.h"
 
 void UWidget_OptionsScreen::NativeOnInitialized()
 {
@@ -36,7 +37,8 @@ void UWidget_OptionsScreen::NativeOnInitialized()
 
 	TabListWidget_OptionsTabs->OnTabSelected.AddUniqueDynamic(this, &ThisClass::OnOptionsTabSelected);
     
-   
+    CommonListView_OptionsList->OnItemIsHoveredChanged().AddUObject(this, &ThisClass::OnListViewItemHovered);
+    CommonListView_OptionsList->OnItemSelectionChanged().AddUObject(this, &ThisClass::OnListViewItemSelectionChanged);
 }
 
 void UWidget_OptionsScreen::NativeOnActivated()
@@ -60,6 +62,13 @@ void UWidget_OptionsScreen::NativeOnActivated()
     
 
 
+}
+void UWidget_OptionsScreen::NativeOnDeactivated()
+{
+	Super::NativeOnDeactivated();
+
+	UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->ApplySettings(true);
+	
 }
 UOptionsDataRegistry *UWidget_OptionsScreen::GetOrCreateDataRegistry()
 {
@@ -100,3 +109,30 @@ void UWidget_OptionsScreen::OnOptionsTabSelected(FName TabID)
     }
 
 }
+
+void UWidget_OptionsScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bWasHovered)
+{
+    if (!InHoveredItem)
+    {
+        return;
+    }
+    UWidget_ListEntry_Base* HoveredEntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem<UWidget_ListEntry_Base>(InHoveredItem);
+
+    check(HoveredEntryWidget);
+
+	HoveredEntryWidget->NativeOnListEntryWidgetHovered(bWasHovered);
+    //测试
+	//FrontendUIDebugHelper::Log("List item " + InHoveredItem->GetName() + (bWasHovered ? " hovered." : " unhovered."));
+}
+
+void UWidget_OptionsScreen::OnListViewItemSelectionChanged(UObject* InSelectedItem)
+{
+    if (!InSelectedItem)
+    {
+        return;
+    }
+    //测试
+	//FrontendUIDebugHelper::Log("List item " + InSelectedItem->GetName() + " selected.");
+}
+
+

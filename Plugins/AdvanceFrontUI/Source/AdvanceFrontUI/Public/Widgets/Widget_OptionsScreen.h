@@ -26,6 +26,7 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 
 	//Begin UCommonActivatableWidget Interface
 	virtual void NativeOnActivated() override;
+	virtual void NativeOnDeactivated() override;
     //end  UCommonActivatableWidget Interface
 
 	private:
@@ -38,6 +39,9 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 		UFUNCTION()
 		void OnOptionsTabSelected(FName TabID);
 
+		void OnListViewItemHovered(UObject* InHoveredItem,bool bWasHovered);
+
+		void OnListViewItemSelectionChanged(UObject* InSelectedItem);
 
 		//Bound Widgets
 		UPROPERTY(meta = (BindWidget))

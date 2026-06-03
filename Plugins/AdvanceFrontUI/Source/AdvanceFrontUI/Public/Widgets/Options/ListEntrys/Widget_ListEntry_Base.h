@@ -19,6 +19,11 @@ class ADVANCEFRONTUI_API UWidget_ListEntry_Base : public UCommonUserWidget, publ
 {
 	GENERATED_BODY()
 
+public:	
+	UFUNCTION(BlueprintImplementableEvent,meta = (DisplayName = "On List Entry Widget Hovered"))
+	void BP_OnListEntryWidgetHovered(bool bWasHovered,bool bIsEntryWidgetStillSelected);
+    void NativeOnListEntryWidgetHovered(bool bWasHovered);
+
 protected:
 
 	//Begin IUserObjectListEntry Interface
@@ -30,6 +35,8 @@ protected:
 
 	virtual void OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason  ModifyReason);
 
+
+	void SelectThisListEntryWidget();
 private:
 	//Bound Widgets
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional,AllowPrivateAccess = "true"))

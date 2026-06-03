@@ -48,6 +48,11 @@ public:
 
 	virtual bool HasAnyChildListData() const { return false; }
 
+	void SetShouldApplySettingsImmediately(bool bShouldApplyRightAway) {
+	
+		bShouldApplyChangeImmediatly = bShouldApplyRightAway;
+	};
+
 protected:
     
 	virtual void OnDataObjectInitialized();
@@ -63,5 +68,7 @@ private:
 
 	UPROPERTY(Transient)
 	UListDataObject_Base* ParentData;
+
+	bool bShouldApplyChangeImmediatly = false;
 
 };
