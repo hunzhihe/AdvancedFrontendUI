@@ -5,6 +5,33 @@
 #include "Widgets/Options/OptionsDataInteractionHelper.h"
 
 
+void UListDataObject_String::OnDataObjectInitialized()
+{
+	if (!AvaiableOptionsStringArray.IsEmpty())
+	{
+		CurrentStringValue = AvaiableOptionsStringArray[0];
+	}
+
+	if (HasDefaultValue())
+	{
+		CurrentStringValue = GetDefualtValueAsString();
+	}
+
+
+	if (DataDynamicGetter)
+	{
+		if (!DataDynamicGetter->GetValueAsString().IsEmpty())
+		{
+			CurrentStringValue = DataDynamicGetter->GetValueAsString();
+		}
+	}
+
+	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
+	{
+		CurrentDisplayText = FText::FromString(CurrentStringValue);
+	};
+}
+
 void UListDataObject_String::AddDynamicOption(const FString& OptionString, const FText& OptionDisplayText)
 {
 	AvaiableOptionsStringArray.Add(OptionString);
@@ -66,25 +93,31 @@ void UListDataObject_String::BackToPerviousOption()
 	}
 }
 
-void UListDataObject_String::OnDataObjectInitialized()
-{
-	if (!AvaiableOptionsStringArray.IsEmpty())
-	{
-		CurrentStringValue = AvaiableOptionsStringArray[0];
-	}
 
-	if (DataDynamicGetter)
+
+bool UListDataObject_String::CanResetBackToDefaultValue() const
+{
+	return HasDefaultValue() && CurrentStringValue != GetDefualtValueAsString();
+}
+
+bool UListDataObject_String::TryResetBackToDefaultValue() 
+{
+	if (CanResetBackToDefaultValue())
 	{
-		if (!DataDynamicGetter->GetValueAsString().IsEmpty())
+		CurrentStringValue = GetDefualtValueAsString();
+		TrySetDisplayTextByStringValue(CurrentStringValue);
+
+		if (DataDynamicSetter)
 		{
-			CurrentStringValue = DataDynamicGetter->GetValueAsString();
+			DataDynamicSetter->SetValueFromString(CurrentStringValue);
+
+			NotifyListDataModified(this, EOptionsLsitDataModifyReason::ResetToDefault);
+
+			return true;
+
 		}
 	}
-
-	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
-	{
-		CurrentDisplayText = FText::FromString(CurrentStringValue);
-	};
+	return false;
 }
 
 bool UListDataObject_String::TrySetDisplayTextByStringValue(const FString& InStringValue)
