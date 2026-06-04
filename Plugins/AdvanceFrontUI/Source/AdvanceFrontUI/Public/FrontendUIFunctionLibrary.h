@@ -9,6 +9,7 @@
 
 
 class UWidget_ActivatableBase;
+class UTexture2D;
 
 /**
  * 
@@ -22,4 +23,8 @@ class ADVANCEFRONTUI_API UFrontendUIFunctionLibrary : public UBlueprintFunctionL
 	UFUNCTION(BlueprintPure, Category = "Frontend UI Functions library")
 	static TSoftClassPtr<UWidget_ActivatableBase> GetFrontendWidgetFromTag(
 	 UPARAM(meta = (Categories = "Frontend.Widget"))FGameplayTag WidgetTag);
+
+	UFUNCTION(BlueprintPure, Category = "Frontend UI Functions library")
+	static TSoftObjectPtr<UTexture2D>GetOptionsSoftImage(
+		UPARAM(meta = (Categories = "Frontend.Image"))FGameplayTag ImageTag);
 };

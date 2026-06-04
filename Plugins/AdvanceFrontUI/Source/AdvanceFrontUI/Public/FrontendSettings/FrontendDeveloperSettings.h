@@ -17,6 +17,9 @@ class ADVANCEFRONTUI_API UFrontendDeveloperSettings : public UDeveloperSettings
 	GENERATED_BODY()
 public:
 
-	UPROPERTY(Config,EditAnywhere,Category = "Widget References",meta = (ForceInlineRow,Categories ="Frontend.Widget"))
+	UPROPERTY(Config, EditAnywhere, Category = "Widget References", meta = (ForceInlineRow, Categories = "Frontend.Widget"))
 	TMap<FGameplayTag, TSoftClassPtr<UWidget_ActivatableBase>> FrontendWidgetMap;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Option Image References", meta = (ForceInlineRow, Categories = "Frontend.Iamge"))
+	TMap< FGameplayTag, TSoftObjectPtr<UTexture2D>> OptionsScreenSoftImageMap;
 };

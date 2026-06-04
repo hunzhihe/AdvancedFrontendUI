@@ -21,9 +21,13 @@ public:
 	void AdvanceToNextOption();
 	void BackToPerviousOption();
 
+	void OnRotatorInitiatedValueChange(const FText& InNewSelectedText);
+
 protected:
 	//Begin UListDataObject_Base interface
 	virtual void OnDataObjectInitialized() override;
+	virtual bool CanResetBackToDefaultValue() const override;
+	virtual bool TryResetBackToDefaultValue()  override;
 	//End UListDataObject_Base interface
 
 	bool TrySetDisplayTextByStringValue(const FString& InStringValue);

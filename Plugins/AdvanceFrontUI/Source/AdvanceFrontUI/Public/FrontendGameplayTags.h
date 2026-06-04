@@ -23,4 +23,8 @@ namespace FrontendGameplayTags
 	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_ConfirmScreen);
 	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_StoryScreen);
 	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_OptionsScreen);
+
+	//Frontend Options Image
+	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Image_TestIamge);
+
 }

@@ -53,6 +53,11 @@ public:
 		bShouldApplyChangeImmediatly = bShouldApplyRightAway;
 	};
 
+	virtual bool HasDefaultValue() const { return false; }
+	virtual bool CanResetBackToDefaultValue() const { return false; }
+	virtual bool TryResetBackToDefaultValue()  { return false; }
+
+
 protected:
     
 	virtual void OnDataObjectInitialized();

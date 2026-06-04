@@ -21,6 +21,9 @@ class ADVANCEFRONTUI_API UFrontendCommonButtonBase : public UCommonButtonBase
 	UFUNCTION(BlueprintCallable)
 	void SetButtonText(FText NewText);
 
+	UFUNCTION(BlueprintCallable)
+	FText GetButtonDisplayText() const;
+
 private:
     
 	//UUserWidget Interface

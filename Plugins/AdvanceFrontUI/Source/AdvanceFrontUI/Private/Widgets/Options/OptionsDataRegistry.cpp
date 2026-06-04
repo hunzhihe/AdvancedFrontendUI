@@ -6,6 +6,9 @@
 #include "Widgets/Options/DataObjects/ListDataObject_String.h"
 #include "Widgets/Options/OptionsDataInteractionHelper.h"
 #include "FrontendSettings/FrontendUIGameUserSettings.h"
+#include "FrontendSettings/FrontendDeveloperSettings.h"
+#include "FrontendUIFunctionLibrary.h"
+#include "FrontendGameplayTags.h"
 
 #define MAKE_OPTIONS_DATA_CONTROL(SetterOrGetterFuncName) \
  MakeShared<FOptionsDataInteractionHelper>(GET_FUNCTION_NAME_STRING_CHECKED(UFrontendUIGameUserSettings, SetterOrGetterFuncName))
@@ -50,9 +53,12 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 		UListDataObject_String* GameDifficultyOption = NewObject<UListDataObject_String>();
 		GameDifficultyOption->SetDataID(FName("GameDifficultyOption"));
 		GameDifficultyOption->SetDataDisplayName(FText::FromString(TEXT("Game Difficulty")));
+		GameDifficultyOption->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the difficulty of the game experience.\n\n<Bold>Easy:</> Focuses on the story experience. Provides the most relaxing combat.\n\n<Bold>Normal:</> Offers slightly harder combat experience\n\n<Bold>Hard:</> Offers a much more challenging combat experience\n\n<Bold>Vert Hard:</> Provides the most challenging combat experience. Not recommended for first play through.")));
+
 		GameDifficultyOption->AddDynamicOption(TEXT("Easy"), FText::FromString(TEXT("Easy")));
 		GameDifficultyOption->AddDynamicOption(TEXT("Medium"), FText::FromString(TEXT("Medium")));
 		GameDifficultyOption->AddDynamicOption(TEXT("Hard"), FText::FromString(TEXT("Hard")));
+		GameDifficultyOption->SetDefaultValueFromString(TEXT("Medium"));
 
 		GameDifficultyOption->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentGameDifficulty));
 		GameDifficultyOption->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentGameDifficulty));
@@ -64,7 +70,10 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 	{
 		UListDataObject_String* TestItemOption = NewObject<UListDataObject_String>();
 		TestItemOption->SetDataID(FName("TestItemOption"));
-		TestItemOption->SetDataDisplayName(FText::FromString(TEXT("Test Item")));
+		TestItemOption->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
+		TestItemOption->SetSoftDiscriptionImage(UFrontendUIFunctionLibrary::GetOptionsSoftImage(FrontendGameplayTags::Frontend_Image_TestIamge));
+		TestItemOption->SetDescriptionRichText(FText::FromString(TEXT("The Image to display can be specified in the settings,it can be anything the Developer assigned in there")));
+
 
 		GameplayTabCollection->AddChildListData(TestItemOption);
 	}

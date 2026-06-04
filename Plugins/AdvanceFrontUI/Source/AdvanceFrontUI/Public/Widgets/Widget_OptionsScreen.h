@@ -4,12 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "Widgets/Widget_ActivatableBase.h"
+#include "FrontendTypes/FrontendEnumType.h"
 #include "Widget_OptionsScreen.generated.h"
 
 
 class UOptionsDataRegistry;
 class UFrontendTabListWidgetBase;
 class UFrontendUICommonListView;
+class UWidget_OptionsDetailView;
+class UListDataObject_Base;
 /**
  * 
  */
@@ -27,6 +30,7 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 	//Begin UCommonActivatableWidget Interface
 	virtual void NativeOnActivated() override;
 	virtual void NativeOnDeactivated() override;
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
     //end  UCommonActivatableWidget Interface
 
 	private:
@@ -43,12 +47,20 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 
 		void OnListViewItemSelectionChanged(UObject* InSelectedItem);
 
+
+		FString TryGetEntryWidgetClassName(UObject* InOwningListItem)const;
+
+		void OnListViewListDataModified(UListDataObject_Base* ModifiedData, EOptionsLsitDataModifyReason ModeifyReason);
+
 		//Bound Widgets
 		UPROPERTY(meta = (BindWidget))
 		UFrontendTabListWidgetBase* TabListWidget_OptionsTabs;
 
 		UPROPERTY(meta = (BindWidget))
 		UFrontendUICommonListView* CommonListView_OptionsList;
+
+		UPROPERTY(meta = (BindWidget))
+		UWidget_OptionsDetailView* DetailView_ListEntryInfo;
 
 		//BoundWidgets
 
@@ -59,6 +71,11 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 		FDataTableRowHandle ResetToDefaultAction;
 
         FUIActionBindingHandle ResetToDefaultActionHandle;
-		
+
+
+		UPROPERTY(Transient)
+		TArray<UListDataObject_Base*> ResettableDataArray;
+
+		bool bIsResettingData = false;
 
 };
