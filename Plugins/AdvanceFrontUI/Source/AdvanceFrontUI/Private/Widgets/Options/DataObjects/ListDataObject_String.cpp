@@ -28,7 +28,7 @@ void UListDataObject_String::OnDataObjectInitialized()
 
 	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
 	{
-		CurrentDisplayText = FText::FromString(CurrentStringValue);
+		CurrentDisplayText = FText::FromString("Invalid Options");
 	};
 }
 
