@@ -27,6 +27,54 @@ float UListDataObject_Scalar::GetCurrentValue() const
     return 0.0f;
 }
 
+void UListDataObject_Scalar::SetCurrentValueFromSlider(float InNewValue)
+{
+    if (DataDynamicSetter)
+    {
+        const float ClampedValue = FMath::GetMappedRangeValueClamped(
+            DisplayValueRange,
+            OutputValueRange,
+            InNewValue
+
+        );
+
+        DataDynamicSetter->SetValueFromString(LexToString(ClampedValue));
+
+        NotifyListDataModified(this);
+    }
+}
+
+bool UListDataObject_Scalar::CanResetBackToDefaultValue() const
+{
+    if (HasDefaultValue() && DataDynamicGetter)
+    {
+        const float DefaultValue = StringToFloat(GetDefualtValueAsString());
+        const float CurrentValum = StringToFloat(DataDynamicGetter->GetValueAsString());
+
+
+        return !FMath::IsNearlyEqual(DefaultValue, CurrentValum, 0.01F);
+    }
+    return false;
+}
+
+bool UListDataObject_Scalar::TryResetBackToDefaultValue()
+{
+
+    if (CanResetBackToDefaultValue())
+    {
+        if (DataDynamicSetter) 
+        {
+            DataDynamicSetter->SetValueFromString(GetDefualtValueAsString());
+
+            NotifyListDataModified(this,EOptionsLsitDataModifyReason::ResetToDefault);
+
+            return true;
+
+        }
+    }
+    return false;
+}
+
 float UListDataObject_Scalar::StringToFloat(const FString& InString) const
 {
     float OutConvertedValue = 0.F;
