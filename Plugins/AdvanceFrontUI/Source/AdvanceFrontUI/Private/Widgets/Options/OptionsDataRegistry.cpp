@@ -362,6 +362,81 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 
 	}
 
+	//Graphics Category
+	{
+		UListDataObject_Collection* GraphicsCategoryCollection = NewObject<UListDataObject_Collection>();
+		GraphicsCategoryCollection->SetDataID(FName("GraphicsCategoryCollection"));
+		GraphicsCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Graphics")));
+
+		VideoTabCollection->AddChildListData(GraphicsCategoryCollection);
+
+		//Display Gamma
+		{
+			UListDataObject_Scalar* DisplayGamma = NewObject<UListDataObject_Scalar>();
+			DisplayGamma->SetDataID(FName("DisplayGamma"));
+			DisplayGamma->SetDataDisplayName(FText::FromString(TEXT("Brightness")));
+			DisplayGamma->SetDescriptionRichText(FText::FromString(TEXT("This is description for Display Gamma")));
+			DisplayGamma->SetDisplayValueRange(TRange<float>(0.f, 1.f));
+			DisplayGamma->SetOutputValueRange(TRange<float>(1.7f, 2.7f));
+			DisplayGamma->SetSliderStepSize(0.01f);
+			DisplayGamma->SetDefaultValueFromString(LexToString(1.f));
+			DisplayGamma->SetDisplayNumericType(ECommonNumericType::Percentage);
+			DisplayGamma->SetNumberFormattingOptions(UListDataObject_Scalar::NoDecimal());
+			DisplayGamma->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentDisplayGamma));
+			DisplayGamma->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentDisplayGamma));
+			DisplayGamma->SetDefaultValueFromString(LexToString(2.2f));
+
+
+			GraphicsCategoryCollection->AddChildListData(DisplayGamma);
+		}
+
+		UListDataObject_StringInteger* CreatedOverallQuality = nullptr;
+
+		//Overall Quality
+		{
+			UListDataObject_StringInteger* OverallQuality =  NewObject<UListDataObject_StringInteger>();
+			OverallQuality->SetDataID(FName("OverallQuality"));
+			OverallQuality->SetDataDisplayName(FText::FromString(TEXT("Overall Quality")));
+			OverallQuality->SetDescriptionRichText(FText::FromString(TEXT("This is description for OverallQuality")));
+			OverallQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
+			OverallQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
+			OverallQuality->AddIntegerOption(2, FText::FromString(TEXT("High")));
+			OverallQuality->AddIntegerOption(3, FText::FromString(TEXT("Epic")));
+			OverallQuality->AddIntegerOption(4, FText::FromString(TEXT("Cinematic")));
+			OverallQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetOverallScalabilityLevel));
+			OverallQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetOverallScalabilityLevel));
+			OverallQuality->SetShouldApplySettingsImmediately(true);
+			
+
+			GraphicsCategoryCollection->AddChildListData(OverallQuality);
+
+			CreatedOverallQuality = OverallQuality;
+		}
+
+		//Resolution Scale
+		{
+			UListDataObject_Scalar* ResolutionScale = NewObject<UListDataObject_Scalar>();
+			ResolutionScale->SetDataID(FName("ResolutionScale"));
+			ResolutionScale->SetDataDisplayName(FText::FromString(TEXT("3D Resolution")));
+			ResolutionScale->SetDescriptionRichText(FText::FromString(TEXT("This is description for ResolutionScale")));
+			ResolutionScale->SetDisplayValueRange(TRange<float>(0.f, 1.f));
+			ResolutionScale->SetOutputValueRange(TRange<float>(0.f, 1.f));
+			ResolutionScale->SetDisplayNumericType(ECommonNumericType::Percentage);
+			ResolutionScale->SetNumberFormattingOptions(UListDataObject_Scalar::NoDecimal());
+			ResolutionScale->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetResolutionScaleNormalized));
+			ResolutionScale->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetResolutionScaleNormalized));
+			ResolutionScale->SetShouldApplySettingsImmediately(true);
+
+
+			ResolutionScale->AddEditDependencyData(CreatedOverallQuality);
+
+			GraphicsCategoryCollection->AddChildListData(ResolutionScale);
+		}
+
+
+	}
+
+
 
 	RegisteredOptionsTabCollections.Add(VideoTabCollection);
 	

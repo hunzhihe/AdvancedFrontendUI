@@ -38,6 +38,8 @@ private:
 	//Begin UListDataObject_Base interface
 	virtual bool CanResetBackToDefaultValue() const override;
 	virtual bool TryResetBackToDefaultValue()  override;
+	virtual void OnEditDependencyDataModifiied(UListDataObject_Base* InModifiedDependencyData, EOptionsLsitDataModifyReason ModifyReason) override;
+
 	//End UListDataObject_Base interface
 
 	float StringToFloat(const FString& InString) const;

@@ -79,7 +79,7 @@ protected:
 	virtual bool CanSetToForcedStringvalue(const FString& InForcedValue) const { return false; }
 	//the child class should override this to specify how to set the current value to the forced calue; 
 	virtual void OnSetToForcedStringvalue(const FString& InForcedValue) {}
-
+	//This func will be called when the value of the dependency data has changed,the child class can overide this func to handle the custom logic need, super call is expected.
 	virtual void OnEditDependencyDataModifiied(UListDataObject_Base* InModifiedDependencyData, EOptionsLsitDataModifyReason ModifyReason);
 
 private:

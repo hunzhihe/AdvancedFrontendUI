@@ -62,6 +62,16 @@ public:
 	void SetCurrentUserHDRAudio(bool InUserHDRAudio);
 
 	//Audio Collection Tab
+
+
+
+	////VideoCollectionTab
+	UFUNCTION()
+	float GetCurrentDisplayGamma() const;
+
+	UFUNCTION()
+	void SetCurrentDisplayGamma(const float& InDisplayGamma);
+	////VideoCollectionTab
 	
 private:
 
@@ -90,4 +100,10 @@ private:
 	//Audio Collection Tab
 
 	
+	//VideoCollectionTab
+	
+
+
+	//VideoCollectionTab
+
 };

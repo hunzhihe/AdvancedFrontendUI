@@ -84,3 +84,26 @@ public:
 		SetDefaultValueFromString(ConveretedEnumString);
 	}
 };
+
+
+UCLASS()
+class ADVANCEFRONTUI_API UListDataObject_StringInteger : public UListDataObject_String
+{
+
+	GENERATED_BODY()
+
+public:
+	void AddIntegerOption(int32 InIntegerValue, const FText& InDispalyText);
+
+protected:
+
+	//Begin UListDataObject_String interface
+	virtual void OnDataObjectInitialized() override;
+
+	virtual void OnEditDependencyDataModifiied(UListDataObject_Base* InModifiedDependencyData, EOptionsLsitDataModifyReason ModifyReason) override;
+	//End UListDataObject_String interface
+private:
+
+
+
+};

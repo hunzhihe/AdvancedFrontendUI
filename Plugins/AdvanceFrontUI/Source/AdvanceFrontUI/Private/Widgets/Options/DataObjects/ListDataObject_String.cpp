@@ -173,53 +173,37 @@ bool UListDataObject_String::TrySetDisplayTextByStringValue(const FString& InStr
 }
 
 
-//void UListDataObject_Stringbool::OverrideTrueDisplayText(const FText& InNameTrueDisplayText)
-//{
-//	if (!AvaiableOptionsStringArray.Contains(TrusString))
-//	{
-//		AddDynamicOption(TrusString, InNameTrueDisplayText);
-//	}
-//}
-//
-//void UListDataObject_Stringbool::OverrideFalseDisplayText(const FText& InNameFalseDisplayText)
-//{
-//	if (!AvaiableOptionsStringArray.Contains(FalseString))
-//	{
-//		AddDynamicOption(FalseString, InNameFalseDisplayText);
-//	}
-//}
-//
-//void UListDataObject_Stringbool::SetTrueAsDefaultValue()
-//{
-//	SetDefaultValueFromString(TrusString);
-//}
-//
-//void UListDataObject_Stringbool::SetFalseAsDefaultValue()
-//{
-//	SetDefaultValueFromString(FalseString);
-//}
-//
-//void UListDataObject_Stringbool::OnDataObjectInitialized()
-//{
-//	TryInitBoolValue();
-//
-//	Super::OnDataObjectInitialized();
-//}
-//
-////UListDataObject_Stringbool
-//void UListDataObject_Stringbool::TryInitBoolValue()
-//{
-//	if (!AvaiableOptionsStringArray.Contains(TrusString))
-//	{
-//		AddDynamicOption(TrusString, FText::FromString(TEXT("ON")));
-//	}
-//
-//	if (!AvaiableOptionsStringArray.Contains(FalseString))
-//	{
-//		AddDynamicOption(FalseString, FText::FromString(TEXT("OFF")));
-//	}
-//
-//}
 
 
-//UListDataObject_Stringbool
+//******** UListDataObject_StringInteger ********//
+void UListDataObject_StringInteger::AddIntegerOption(int32 InIntegerValue, const FText& InDispalyText)
+{
+	AddDynamicOption(LexToString(InIntegerValue), InDispalyText);
+
+}
+
+void UListDataObject_StringInteger::OnDataObjectInitialized()
+{
+	Super::OnDataObjectInitialized();
+
+	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
+	{
+		CurrentDisplayText = FText::FromString(TEXT("Custom"));
+	}
+}
+
+void UListDataObject_StringInteger::OnEditDependencyDataModifiied(UListDataObject_Base* InModifiedDependencyData, EOptionsLsitDataModifyReason ModifyReason)
+{
+	if (DataDynamicGetter)
+	{
+		CurrentStringValue = DataDynamicGetter->GetValueAsString();
+
+		if (!TrySetDisplayTextByStringValue(CurrentStringValue))
+		{
+			CurrentDisplayText = FText::FromString(TEXT("Custom"));
+		}
+
+		NotifyListDataModified(this, EOptionsLsitDataModifyReason::DependencyModified);
+	}
+	Super::OnEditDependencyDataModifiied(InModifiedDependencyData, ModifyReason);
+}
