@@ -60,11 +60,45 @@ void UWidget_ListEntry_Base::OnOwningListDataObjectSet(UListDataObject_Base* InL
 			&UWidget_ListEntry_Base::OnOwingListDataObjectModifed
 		);
 	}
+
+	if (!InListDataObject->OnDependencyDataModified.IsBoundToObject(this))
+	{
+		InListDataObject->OnDependencyDataModified.AddUObject(
+			this,
+			&ThisClass::OnOwningDependencyDataObjectModified
+
+		);
+	}
+
+
+	OnToggleEditableState(InListDataObject->IsDataCurrentlyEditable());
+
+	CachedOwningDataObject = InListDataObject;
+	
 }
 
 void UWidget_ListEntry_Base::OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason ModifyReason)
 {
+	
 
+}
+
+void UWidget_ListEntry_Base::OnOwningDependencyDataObjectModified(UListDataObject_Base* OwningModifiedDependencyData, EOptionsLsitDataModifyReason ModifyReason)
+{
+	if (CachedOwningDataObject)
+	{
+		OnToggleEditableState(CachedOwningDataObject->IsDataCurrentlyEditable());
+	}
+	
+}
+
+void UWidget_ListEntry_Base::OnToggleEditableState(bool bIsEditable)
+{
+
+	if (CommonText_SettingDisplayName)
+	{
+		CommonText_SettingDisplayName->SetIsEnabled(bIsEditable);
+	}
 }
 
 void UWidget_ListEntry_Base::SelectThisListEntryWidget()

@@ -11,6 +11,7 @@
 #include "FrontendGameplayTags.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Scalar.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Stringbool.h"
+#include "Widgets/Options/DataObjects/ListDataObject_StringResolution.h"
 
 
 #define MAKE_OPTIONS_DATA_CONTROL(SetterOrGetterFuncName) \
@@ -231,22 +232,6 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		
 		AudioTabCollection->AddChildListData(SoundCategoryCollection);
 
-
-
-
-		//Test Item
-		{
-			UListDataObject_String* TestItemOption = NewObject<UListDataObject_String>();
-			TestItemOption->SetDataID(FName("TestItemOption"));
-			TestItemOption->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
-			TestItemOption->SetSoftDiscriptionImage(UFrontendUIFunctionLibrary::GetOptionsSoftImage(FrontendGameplayTags::Frontend_Image_TestIamge));
-			TestItemOption->SetDescriptionRichText(FText::FromString(TEXT("The Image to display can be specified in the settings,it can be anything the Developer assigned in there")));
-
-
-			SoundCategoryCollection->AddChildListData(TestItemOption);
-		}
-
-
 		//Allow Background Audio
 		{
 			UListDataObject_Stringbool* AllowBackgroundAudio =  NewObject<UListDataObject_Stringbool>();
@@ -261,6 +246,23 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 
 			SoundCategoryCollection->AddChildListData(AllowBackgroundAudio);
 		}
+
+		//User HDR Audio
+		{
+			UListDataObject_Stringbool* UserHDRAudio = NewObject<UListDataObject_Stringbool>();
+			UserHDRAudio->SetDataID(FName("UserHDRAudio"));
+			UserHDRAudio->SetDataDisplayName(FText::FromString(TEXT("User HDR Audio")));
+			UserHDRAudio->OverrideTrueDisplayText(FText::FromString(TEXT("Enable")));
+			UserHDRAudio->OverrideFalseDisplayText(FText::FromString(TEXT("Disabled")));
+			UserHDRAudio->SetFalseAsDefaultValue();
+			UserHDRAudio->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentUserHDRAudio));
+			UserHDRAudio->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentUserHDRAudio));
+			UserHDRAudio->SetShouldApplySettingsImmediately(true);
+
+			SoundCategoryCollection->AddChildListData(UserHDRAudio);
+
+		}
+
 		
 	}
 	RegisteredOptionsTabCollections.Add(AudioTabCollection);
@@ -273,6 +275,93 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 	UListDataObject_Collection* VideoTabCollection = NewObject<UListDataObject_Collection>();
 	VideoTabCollection->SetDataID(FName("VideoTabCollection"));
 	VideoTabCollection->SetDataDisplayName(FText::FromString(TEXT("Video")));
+
+
+	UListDataObject_StringEnum* CreatedWindowMode = nullptr;
+
+	//Display Category
+	{
+		UListDataObject_Collection* DisplayCategoryCollection = NewObject<UListDataObject_Collection>();
+		DisplayCategoryCollection->SetDataID(FName("DisplayCategoryCollection"));
+		DisplayCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Display")));
+
+		VideoTabCollection->AddChildListData(DisplayCategoryCollection);
+
+		FOptinsDataEditConditionDescriptor PackagedBulldOnlyCondition;
+		PackagedBulldOnlyCondition.SetEditConditionFunc(
+			[]()->bool {
+				const bool bIsInEditor = GIsEditor || GIsPlayInEditorWorld;
+
+				return !bIsInEditor;
+			}
+		);
+
+		PackagedBulldOnlyCondition.SetDisabledRichReason(TEXT("\n\n<Disabled>This setting can only be adjust in a packaged build.</>"));
+
+		//Window Mode
+		{
+
+			UListDataObject_StringEnum* WindowMode = NewObject<UListDataObject_StringEnum>();
+			WindowMode->SetDataID(FName("WindowMode"));
+			WindowMode->SetDataDisplayName(FText::FromString(TEXT("Window Mode")));
+			WindowMode->SetDescriptionRichText(FText::FromString(TEXT("This is description for Window Mode")));
+			WindowMode->AddEnumOptions(EWindowMode::Fullscreen, FText::FromString(TEXT("FullScreen Mode")));
+			WindowMode->AddEnumOptions(EWindowMode::WindowedFullscreen, FText::FromString(TEXT("Borderless Window")));
+			WindowMode->AddEnumOptions(EWindowMode::Windowed, FText::FromString(TEXT("Windowed")));
+			WindowMode->SetDefaultValueFromEnumOption(EWindowMode::WindowedFullscreen);
+			WindowMode->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetFullscreenMode));
+			WindowMode->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetFullscreenMode));
+			WindowMode->SetShouldApplySettingsImmediately(true);
+
+			WindowMode->AddEditCondition(PackagedBulldOnlyCondition);
+
+			CreatedWindowMode = WindowMode;
+
+			DisplayCategoryCollection->AddChildListData(WindowMode);
+		}
+
+		//Screen Resolution
+		{
+			UListDataObject_StringResolution* ScreenResolution = NewObject<UListDataObject_StringResolution>();
+			ScreenResolution->SetDataID(FName("ScreenResolution"));
+			ScreenResolution->SetDataDisplayName(FText::FromString(TEXT("Screen Resolution")));
+			ScreenResolution->SetDescriptionRichText(FText::FromString(TEXT("This is description for Screen Resolution")));
+			ScreenResolution->InitResolutionValues();
+			ScreenResolution->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetScreenResolution));
+			ScreenResolution->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetScreenResolution));
+			ScreenResolution->SetShouldApplySettingsImmediately(true);
+
+
+
+			ScreenResolution->AddEditCondition(PackagedBulldOnlyCondition);
+			ScreenResolution->AddEditDependencyData(CreatedWindowMode);
+
+
+			FOptinsDataEditConditionDescriptor WindowModeEditCondition;
+			WindowModeEditCondition.SetEditConditionFunc(
+				[CreatedWindowMode]()->bool {
+
+					const bool bIsBoderlessWindow =  CreatedWindowMode->GetCurrentValueAsEnum<EWindowMode::Type>() == 
+						EWindowMode::WindowedFullscreen;
+
+					return !bIsBoderlessWindow;
+				}
+			
+			);
+
+			WindowModeEditCondition.SetDisabledRichReason(TEXT("\n\n<Disabled> Screen Resolution is not adjustable when the 'window mode' is set to Borderless Window.the value must match with the maximum allowed resolution. </>"));
+			WindowModeEditCondition.SetDisabledForcedStringValue(ScreenResolution->GetMaximumAllowedResolution());
+
+			ScreenResolution->AddEditCondition(WindowModeEditCondition);
+
+			DisplayCategoryCollection->AddChildListData(ScreenResolution);
+
+		}
+
+
+
+	}
+
 
 	RegisteredOptionsTabCollections.Add(VideoTabCollection);
 	

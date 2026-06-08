@@ -4,6 +4,7 @@
 #include "Controllers/FrontendPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "Camera/CameraActor.h"
+#include "FrontendSettings/FrontendUIGameUserSettings.h"
 
 
 void AFrontendPlayerController::OnPossess(APawn *InPawn)
@@ -21,4 +22,14 @@ void AFrontendPlayerController::OnPossess(APawn *InPawn)
             SetViewTarget(CameraActor);
         }
     }
+
+    UFrontendUIGameUserSettings* GameUserSetting =  UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings();
+
+    if (GameUserSetting->GetLastCPUBenchmarkResult() == -1.f || GameUserSetting->GetLastGPUBenchmarkResult()==-1.f)
+    {
+        GameUserSetting->RunHardwareBenchmark();
+
+        GameUserSetting->ApplyHardwareBenchmarkResults();
+    }
+
 }

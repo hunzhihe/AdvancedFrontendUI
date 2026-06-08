@@ -21,7 +21,7 @@ class ADVANCEFRONTUI_API UWidget_OptionsDetailView : public UUserWidget
 
 
 public:	
-	void UpdateDetailView(const UListDataObject_Base* InDataObject,const FString& InEntryWidgetClassName = FString());
+	void UpdateDetailView(UListDataObject_Base* InDataObject,const FString& InEntryWidgetClassName = FString());
 	void ClearDetailView();
 
 protected:

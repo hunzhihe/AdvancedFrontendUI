@@ -29,6 +29,7 @@ protected:
 	//Begin UWidget_ListEntry_Base interface
 	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject) override;
 	virtual void OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason  ModifyReason) override;
+	virtual void OnToggleEditableState(bool bIsEditable) override;
 	//End UWidget_ListEntry_Base interface
 
 

@@ -8,6 +8,7 @@ UFrontendUIGameUserSettings::UFrontendUIGameUserSettings()
 	,MusicVolume(1.f)
 	, SoundFXVolume(1.f)
 	, bAllowBackgroundAudio(false)
+	, bUserHDRAudio(false)
 {
 }
 
@@ -42,4 +43,9 @@ void UFrontendUIGameUserSettings::SetCurrentSoundFXVolume(const float& InSoundFX
 void UFrontendUIGameUserSettings::SetCurrentAllowBackgroundAudio( bool InAllowBackgroundAudio)
 {
 	bAllowBackgroundAudio = InAllowBackgroundAudio;
+}
+
+void UFrontendUIGameUserSettings::SetCurrentUserHDRAudio(bool InUserHDRAudio)
+{
+	bUserHDRAudio = InUserHDRAudio;
 }

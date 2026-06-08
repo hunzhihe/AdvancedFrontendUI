@@ -55,6 +55,12 @@ public:
 	UFUNCTION()
 	void SetCurrentAllowBackgroundAudio( bool InAllowBackgroundAudio);
 
+	UFUNCTION()
+	bool GetCurrentUserHDRAudio() const { return bUserHDRAudio; }
+
+	UFUNCTION()
+	void SetCurrentUserHDRAudio(bool InUserHDRAudio);
+
 	//Audio Collection Tab
 	
 private:
@@ -78,7 +84,10 @@ private:
 	UPROPERTY(Config)
 	bool bAllowBackgroundAudio;
 
-
+	UPROPERTY(Config)
+	bool bUserHDRAudio;
 
 	//Audio Collection Tab
+
+	
 };

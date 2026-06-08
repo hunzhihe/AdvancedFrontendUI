@@ -7,7 +7,7 @@
 #include "CommonRichTextBlock.h"
 #include "Widgets/Options/ListDataObject_Base.h"
 
-void UWidget_OptionsDetailView::UpdateDetailView(const UListDataObject_Base* InDataObject, const FString& InEntryWidgetClassName)
+void UWidget_OptionsDetailView::UpdateDetailView(UListDataObject_Base* InDataObject, const FString& InEntryWidgetClassName)
 {
 	if (!InDataObject)
 	{
@@ -34,7 +34,10 @@ void UWidget_OptionsDetailView::UpdateDetailView(const UListDataObject_Base* InD
 
 	CommonRichTextBlock_DynamicDetails->SetText(FText::FromString(DynamicDetails));
 
-	CommonRichTextBlock_DisableReason->SetText(InDataObject->GetDisabledRichText());
+	CommonRichTextBlock_DisableReason->SetText(InDataObject->
+		IsDataCurrentlyEditable()?FText::GetEmpty() : InDataObject->GetDisabledRichText()
+	
+	);
 }
 
 void UWidget_OptionsDetailView::ClearDetailView()

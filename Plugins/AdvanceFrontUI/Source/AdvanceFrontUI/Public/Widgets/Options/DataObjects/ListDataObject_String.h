@@ -28,6 +28,11 @@ protected:
 	virtual void OnDataObjectInitialized() override;
 	virtual bool CanResetBackToDefaultValue() const override;
 	virtual bool TryResetBackToDefaultValue()  override;
+
+	
+	virtual bool CanSetToForcedStringvalue(const FString& InForcedValue) const override;
+	
+	virtual void  OnSetToForcedStringvalue(const FString& InForcedValue) override;
 	//End UListDataObject_Base interface
 
 	bool TrySetDisplayTextByStringValue(const FString& InStringValue);
@@ -47,30 +52,35 @@ public:
 };
 
 
-//UCLASS()
-//class ADVANCEFRONTUI_API UListDataObject_Stringbool : public UListDataObject_String
-//{
-//	GENERATED_BODY()
-//
-//
-//public:
-//	void OverrideTrueDisplayText(const FText& InNameTrueDisplayText);
-//	void OverrideFalseDisplayText(const FText& InNameFalseDisplayText);
-//
-//	void SetTrueAsDefaultValue();
-//	void SetFalseAsDefaultValue();
-//
-//protected:
-//
-//	//UListDataObject_String Interface
-//	virtual void OnDataObjectInitialized() override;
-//
-//	//UListDataObject_String Interface
-//
-//private:
-//	void TryInitBoolValue();
-//
-//	const FString TrusString = TEXT("true");
-//	const FString FalseString = TEXT("false");
-//
-//};
+UCLASS()
+class ADVANCEFRONTUI_API UListDataObject_StringEnum : public UListDataObject_String
+{
+	GENERATED_BODY()
+
+public:
+	template<typename EnumType>
+	void AddEnumOptions(EnumType InEnumOption, const FText& InDispalyText)
+	{
+		const UEnum* StaticEnumOption = StaticEnum<EnumType>();
+		const FString ConveretedEnumString =  StaticEnumOption->GetNameStringByValue(InEnumOption);
+
+		AddDynamicOption(ConveretedEnumString, InDispalyText);
+		
+	}
+
+	template<typename EnumType>
+	EnumType GetCurrentValueAsEnum() const
+	{
+		const UEnum* StaticEnumOption = StaticEnum<EnumType>();
+		return (EnumType)StaticEnumOption->GetValueByNameString(CurrentStringValue);
+	}
+
+	template<typename EnumType>
+	void SetDefaultValueFromEnumOption(EnumType InEnumOption)
+	{
+		const UEnum* StaticEnumOption = StaticEnum<EnumType>();
+		const FString ConveretedEnumString = StaticEnumOption->GetNameStringByValue(InEnumOption);
+
+		SetDefaultValueFromString(ConveretedEnumString);
+	}
+};

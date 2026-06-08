@@ -41,6 +41,10 @@ protected:
 
 	virtual void OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason  ModifyReason);
 
+	virtual void OnOwningDependencyDataObjectModified(UListDataObject_Base* OwningModifiedDependencyData, EOptionsLsitDataModifyReason  ModifyReason);
+
+	virtual void OnToggleEditableState(bool bIsEditable);
+
 
 	void SelectThisListEntryWidget();
 private:
@@ -49,4 +53,8 @@ private:
 	UCommonTextBlock* CommonText_SettingDisplayName;
 	//Bound Widgets
 	
+	UPROPERTY(Transient)
+	UListDataObject_Base* CachedOwningDataObject;
+
+
 };
