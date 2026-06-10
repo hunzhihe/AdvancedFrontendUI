@@ -10,6 +10,7 @@
 class UCommonTextBlock;
 class UFrontendUIButtonInternalBase;
 class SCommonButton;
+class UCommonLazyImage;
 /**
  * 
  */
@@ -23,6 +24,10 @@ class ADVANCEFRONTUI_API UFrontendCommonButtonBase : public UCommonButtonBase
 
 	UFUNCTION(BlueprintCallable)
 	FText GetButtonDisplayText() const;
+
+	UFUNCTION(BlueprintCallable)
+	void SetButtonDisplayImage(const FSlateBrush& InBrush);
+	
 
 private:
     
@@ -44,6 +49,9 @@ private:
 	//Bound Widgets
     UPROPERTY(BlueprintReadWrite,meta = (BindWidgetOptional,AllowPrivateAccess = "true"))
 	UCommonTextBlock* CommonTextBlock_ButtonText;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional, AllowPrivateAccess = "true"))
+	UCommonLazyImage* CommonLazyImage_ButtonImage;
 	//Bound Widgets
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Frontend Common Button", meta = (AllowPrivateAccess = "true"))

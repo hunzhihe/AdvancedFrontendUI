@@ -31,7 +31,8 @@ public class AdvanceFrontUI : ModuleRules
 				"CommonUI",    // 添加这一行
 				"InputCore", // <--- 添加这一行
                 "CommonInput",
-				"PropertyPath"
+                "EnhancedInput",
+                "PropertyPath"
 
 				// ... add other public dependencies that you statically link with here ...
 			}

@@ -134,12 +134,12 @@ void UWidget_OptionsScreen::OnResetBoundActionTriggered()
 
                 if (DataToReset->TryResetBackToDefaultValue())
                 {
-                    FrontendUIDebugHelper::Log(DataToReset->GetDataDisplayName().ToString() + TEXT("was rest"));
+                    //FrontendUIDebugHelper::Log(DataToReset->GetDataDisplayName().ToString() + TEXT("was rest"));
                 }
                 else
                 {
                     bHasDataFailedToReset = true;
-                    FrontendUIDebugHelper::Log(DataToReset->GetDataDisplayName().ToString() + TEXT("failed to reset"));
+                    //FrontendUIDebugHelper::Log(DataToReset->GetDataDisplayName().ToString() + TEXT("failed to reset"));
                 }
             }
 

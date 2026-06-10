@@ -8,6 +8,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Blueprint/WidgetTree.h"
 #include "CommonButtonBase.h"
+#include "CommonLazyImage.h"
 
 
 
@@ -28,6 +29,14 @@ FText UFrontendCommonButtonBase::GetButtonDisplayText() const
     }
 
     return FText();
+}
+
+void UFrontendCommonButtonBase::SetButtonDisplayImage(const FSlateBrush& InBrush)
+{
+    if (CommonLazyImage_ButtonImage)
+    {
+        CommonLazyImage_ButtonImage->SetBrush(InBrush);
+    }
 }
 
 
