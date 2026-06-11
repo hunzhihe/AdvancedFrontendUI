@@ -18,6 +18,12 @@ class ADVANCEFRONTUI_API UWidget_ListEntry_KeyRemap : public UWidget_ListEntry_B
 	GENERATED_BODY()
 	
 protected:
+	//Begin UUserWidget Interface
+	virtual void NativeOnInitialized() override;
+	//End UUserWidget Interface
+
+
+
 	//Begin UWidget_ListEntry_Base Interface
 	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject) override;
 
@@ -26,6 +32,11 @@ protected:
 
 
 private:
+
+	void OnRemapKeyButtonClicked();
+	void OnRemapKeyBindingButtonClicked();
+
+
 	UPROPERTY(BlueprintReadOnly,meta = (BindWidget,AllowPrivateAccess = "true"))
 	UFrontendCommonButtonBase* CommonButton_RemapKey;
 
@@ -34,5 +45,7 @@ private:
 
 	UPROPERTY(Transient)
 	UListDataObject_KeyRemap* CachedOwningKeyRemapDataObject;
+
+
 
 };
