@@ -63,6 +63,11 @@ class ADVANCEFRONTUI_API UWidget_ConformScreen : public UWidget_ActivatableBase
 		UConfirmScreenInfoObject* InConfirmScreenInfoObject,TFunction<void(EConfirmScreenButtonType)> InButtonClickedCallback);
 
 
+protected:
+	//Begin UCommonActivatableWidget Interface
+	virtual UWidget* NativeGetDesiredFocusTarget() const override;
+	//end  UCommonActivatableWidget Interface
+
 	private:
 	UPROPERTY(META = (BindWidget))
 	UCommonTextBlock* CommonTextBlock_ConformScreenTitle;

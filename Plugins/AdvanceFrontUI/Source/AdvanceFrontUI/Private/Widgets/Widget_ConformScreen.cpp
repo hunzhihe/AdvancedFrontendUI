@@ -85,29 +85,29 @@ void UWidget_ConformScreen::InitConformScreen(UConfirmScreenInfoObject *InConfir
             for (const FConformScreenButtonInfo& AvailableButtonInfo : InConfirmScreenInfoObject->AvailableDcreenButtons)
             {
 
-                FDataTableRowHandle InputActionRowHandle;
+                //FDataTableRowHandle InputActionRowHandle;
 
-                switch (AvailableButtonInfo.ConfirmScreenButtonType)
-                {
-                // case EConfirmScreenButtonType::Confirmed:
-                //     InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultClickAction();
+                //switch (AvailableButtonInfo.ConfirmScreenButtonType)
+                //{
+                //// case EConfirmScreenButtonType::Confirmed:
+                ////     InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultClickAction();
+                ////     break;
+                //case EConfirmScreenButtonType::Cancelled:
+                //    InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultBackAction();
+                //    break;
+                //case EConfirmScreenButtonType::Closed:
+                //    InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultBackAction();
                 //     break;
-                case EConfirmScreenButtonType::Cancelled:
-                    InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultBackAction();
-                    break;
-                case EConfirmScreenButtonType::Closed:
-                    InputActionRowHandle = ICommonInputModule::GetSettings().GetDefaultBackAction();
-                     break;
-                default:
-                    break;
-                    
-                }
+                //default:
+                //    break;
+                //    
+                //}
 
                 UFrontendCommonButtonBase* Button = DynamicEntryBox_ConformScreenButton->CreateEntry<UFrontendCommonButtonBase>();
                 if (Button)
                 {
                     Button->SetButtonText(AvailableButtonInfo.ButtonTextToDisplay);
-                    Button->SetTriggeringInputAction(InputActionRowHandle);
+                    //Button->SetTriggeringInputAction(InputActionRowHandle);
                     Button->OnClicked().AddLambda
                     ([InButtonClickedCallback, AvailableButtonInfo, this]()
                     {
@@ -125,4 +125,13 @@ void UWidget_ConformScreen::InitConformScreen(UConfirmScreenInfoObject *InConfir
         }   
     
     }
+}
+
+UWidget* UWidget_ConformScreen::NativeGetDesiredFocusTarget() const
+{
+    if (DynamicEntryBox_ConformScreenButton->GetNumEntries() > 0)
+    {
+        DynamicEntryBox_ConformScreenButton->GetAllEntries().Last()->SetFocus();
+    }
+    return Super::NativeGetDesiredFocusTarget();
 }

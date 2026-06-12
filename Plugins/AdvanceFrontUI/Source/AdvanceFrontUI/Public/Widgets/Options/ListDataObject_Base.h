@@ -56,6 +56,7 @@ public:
 		bShouldApplyChangeImmediatly = bShouldApplyRightAway;
 	};
 
+	//the child class should overrider them to provide implementation for resetting the data
 	virtual bool HasDefaultValue() const { return false; }
 	virtual bool CanResetBackToDefaultValue() const { return false; }
 	virtual bool TryResetBackToDefaultValue()  { return false; }

@@ -784,6 +784,70 @@ void UOptionsDataRegistry::InitControlCollectionTab(ULocalPlayer* InOwningLocalP
 			}
 		}
 
+
+		
+
+
+	}
+
+
+	//GamePad Category
+	{
+		UListDataObject_Collection* GamePadCategory = NewObject<UListDataObject_Collection>();
+		GamePadCategory->SetDataID(FName("GamePadCategory"));
+		GamePadCategory->SetDataDisplayName(FText::FromString(TEXT("GamePad")));
+
+
+		ControlTabCollection->AddChildListData(GamePadCategory);
+
+		//GamePad Input
+		{
+			FPlayerMappableKeyQueryOptions GamePadOnly;
+			GamePadOnly.KeyToMatch = EKeys::EKeys::Gamepad_FaceButton_Right;
+			GamePadOnly.bMatchBasicKeyTypes = true;
+
+			//测试
+			//FPlayerMappableKeyQueryOptions GamepadOnly;
+			//GamepadOnly.KeyToMatch = EKeys::Gamepad_FaceButton_Right;
+			//GamepadOnly.bMatchBasicKeyTypes = true;
+
+			for (const TPair<FString, UEnhancedPlayerMappableKeyProfile*>& ProfilePair : EIUserSettings->GetAllAvailableKeyProfiles())
+			{
+				UEnhancedPlayerMappableKeyProfile* MappableKeyProfile = ProfilePair.Value;
+
+				check(MappableKeyProfile);
+
+				for (const TPair<FName, FKeyMappingRow>& MappingRowPair : MappableKeyProfile->GetPlayerMappingRows())
+				{
+					for (const FPlayerKeyMapping& KeyMappinging : MappingRowPair.Value.Mappings)
+					{
+						if (MappableKeyProfile->DoesMappingPassQueryOptions(KeyMappinging, GamePadOnly))
+						{
+							//FrontendUIDebugHelper::Log(TEXT("Mapping ID:") + KeyMappinging.GetMappingName().ToString() +
+							//TEXT("Display Name:") + KeyMappinging.GetDisplayName().ToString() +
+							//TEXT("Bound Key:") + KeyMappinging.GetCurrentKey().GetDisplayName().ToString()
+						 //   );
+							UListDataObject_KeyRemap* KeyRemapDataObject = NewObject<UListDataObject_KeyRemap>();
+							KeyRemapDataObject->SetDataID(KeyMappinging.GetMappingName());
+							KeyRemapDataObject->SetDataDisplayName(KeyMappinging.GetDisplayName());
+							KeyRemapDataObject->InitKeyRemapData(EIUserSettings, MappableKeyProfile, ECommonInputType::Gamepad, KeyMappinging);
+
+
+
+							GamePadCategory->AddChildListData(KeyRemapDataObject);
+						}
+
+
+
+					}
+				}
+			}
+		}
+
+
+
+
+
 	}
 
 
