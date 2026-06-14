@@ -32,7 +32,8 @@ public class AdvanceFrontUI : ModuleRules
 				"InputCore", // <--- 添加这一行
                 "CommonInput",
                 "EnhancedInput",
-                "PropertyPath"
+                "PropertyPath",
+                "PreLoadScreen"
 
 				// ... add other public dependencies that you statically link with here ...
 			}
