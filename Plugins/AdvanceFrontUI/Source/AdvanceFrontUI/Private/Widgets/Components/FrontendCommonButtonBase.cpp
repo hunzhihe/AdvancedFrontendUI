@@ -69,19 +69,21 @@ void UFrontendCommonButtonBase::NativeOnCurrentTextStyleChanged()
 void UFrontendCommonButtonBase::NativeOnHovered()
 {
     Super::NativeOnHovered();
+    // 悬停时通过子系统广播按钮描述文本
     if (!ButtonDiscriptionText.IsEmpty())
     {
         UFrontendUISubsystem* FrontendUISubsystem = UFrontendUISubsystem::Get(this);
-        if (FrontendUISubsystem)        
+        if (FrontendUISubsystem)
         {
             FrontendUISubsystem->OnButtonDescriptionTextUpdated.Broadcast(this, ButtonDiscriptionText);
         }
-    }      
+    }
 }
 
 void UFrontendCommonButtonBase::NativeOnUnhovered()
 {
     Super::NativeOnUnhovered();
+    // 取消悬停时清除描述文本
     UFrontendUISubsystem* FrontendUISubsystem = UFrontendUISubsystem::Get(this);
     if (FrontendUISubsystem)    {
         FrontendUISubsystem->OnButtonDescriptionTextUpdated.Broadcast(this, FText::GetEmpty());

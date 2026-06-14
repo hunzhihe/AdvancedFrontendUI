@@ -11,6 +11,7 @@
 
 bool UFrontendLoadingScreenSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
+	// 非专用服务器且在无派生类时创建
 	if (!CastChecked<UGameInstance>(Outer)->IsDedicatedServerInstance())
 	{
 		TArray<UClass*> FoundClasses;
@@ -23,12 +24,14 @@ bool UFrontendLoadingScreenSubsystem::ShouldCreateSubsystem(UObject* Outer) cons
 
 void UFrontendLoadingScreenSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
+	// 监听地图预加载和加载完成事件
 	FCoreUObjectDelegates::PreLoadMapWithContext.AddUObject(this, &ThisClass::OnMapPreLoaded);
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::OnMapPostLoaded);
 }
 
 void UFrontendLoadingScreenSubsystem::Deinitialize()
 {
+	// 移除所有事件绑定
 	FCoreUObjectDelegates::PreLoadMapWithContext.RemoveAll(this);
 	FCoreUObjectDelegates::PostLoadMapWithWorld.RemoveAll(this);
 

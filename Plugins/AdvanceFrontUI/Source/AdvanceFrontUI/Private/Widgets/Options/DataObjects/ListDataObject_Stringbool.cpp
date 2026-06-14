@@ -40,6 +40,7 @@ void UListDataObject_Stringbool::OnDataObjectInitialized()
 
 void UListDataObject_Stringbool::TryInitBoolValue()
 {
+	// 如果尚未通过 Override 函数自定义，则使用默认的 ON/OFF 显示文本
 	if (!AvaiableOptionsStringArray.Contains(TrusString))
 	{
 		AddDynamicOption(TrusString, FText::FromString(TEXT("ON")));

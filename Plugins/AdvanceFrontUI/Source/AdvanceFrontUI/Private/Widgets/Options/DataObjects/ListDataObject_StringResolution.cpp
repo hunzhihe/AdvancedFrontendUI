@@ -10,9 +10,11 @@
 
 void UListDataObject_StringResolution::InitResolutionValues()
 {
+	// 获取系统支持的所有全屏分辨率
 	TArray<FIntPoint> AvaialbeResolutionss;
 	UKismetSystemLibrary::GetSupportedFullscreenResolutions(AvaialbeResolutionss);
 
+	// 按分辨率从小到大排序
 	AvaialbeResolutionss.Sort(
 		[](const FIntPoint& A, const FIntPoint& B)->bool {
 
@@ -21,15 +23,16 @@ void UListDataObject_StringResolution::InitResolutionValues()
 
 	);
 
+	// 将所有分辨率添加为选项
 	for (const FIntPoint& Resolution: AvaialbeResolutionss)
 	{
-		//Resolution Value from Dynamic Getter: (x=1920, y=1080)
-		//FrontendUIDebugHelper::Log(TEXT("Available Resolution: ") + Resolution.ToString());
 		AddDynamicOption(ResToValueString(Resolution), ResToDisplayText(Resolution));
 	}
 
+	// 记录最大分辨率（用于非全屏窗口模式的强制值）
 	MaximumAllowedResolution = ResToValueString( AvaialbeResolutionss.Last());
 
+	// 默认选中最大分辨率
 	SetDefaultValueFromString(MaximumAllowedResolution);
 }
 

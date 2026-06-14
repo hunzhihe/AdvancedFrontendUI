@@ -7,7 +7,9 @@
 #include "ListDataObject_Stringbool.generated.h"
 
 /**
- * 
+ * 布尔类型的字符串列表数据对象
+ * 内部使用 "true"/"false" 字符串表示布尔值，
+ * 支持自定义真/假值的显示文本（如 "Enable"/"Disabled"）。
  */
 UCLASS()
 class ADVANCEFRONTUI_API UListDataObject_Stringbool : public UListDataObject_String
@@ -16,23 +18,27 @@ class ADVANCEFRONTUI_API UListDataObject_Stringbool : public UListDataObject_Str
 
 
 public:
+	/** 覆盖 true 值的显示文本 */
 	void OverrideTrueDisplayText(const FText& InNameTrueDisplayText);
+	/** 覆盖 false 值的显示文本 */
 	void OverrideFalseDisplayText(const FText& InNameFalseDisplayText);
 
+	/** 设置 true 为默认值 */
 	void SetTrueAsDefaultValue();
+	/** 设置 false 为默认值 */
 	void SetFalseAsDefaultValue();
 
 protected:
 
 	//UListDataObject_String Interface
 	virtual void OnDataObjectInitialized() override;
-
 	//UListDataObject_String Interface
 
 private:
+	/** 初始化布尔值选项（ON/OFF），可通过 Override 函数自定义 */
 	void TryInitBoolValue();
 
 	const FString TrusString = TEXT("true");
 	const FString FalseString = TEXT("false");
-	
+
 };

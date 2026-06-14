@@ -24,8 +24,8 @@ void UWidget_ListEntry_Base::NativeOnListEntryWidgetHovered(bool bWasHovered)
 void UWidget_ListEntry_Base::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
 	IUserObjectListEntry::NativeOnListItemObjectSet(ListItemObject);
-	//SetVisibility(ESlateVisibility::Visible);
 
+	// 通知子类数据对象已设置
 	OnOwningListDataObjectSet(CastChecked<UListDataObject_Base>(ListItemObject));
 
 }
@@ -45,6 +45,7 @@ FReply UWidget_ListEntry_Base::NativeOnFocusReceived(const FGeometry& InGeometry
 {
 	UCommonInputSubsystem* CommonInputSubsystem = GetInputSubsystem();
 
+	// 手柄模式：将焦点重定向到蓝图指定的子控件
 	if (CommonInputSubsystem && CommonInputSubsystem->GetCurrentInputType() == ECommonInputType::Gamepad)
 	{
 		if (UWidget* WidgetToFocus = BP_GetWidgetToFocusForGamepad())
@@ -53,7 +54,7 @@ FReply UWidget_ListEntry_Base::NativeOnFocusReceived(const FGeometry& InGeometry
 			{
 				return FReply::Handled().SetUserFocus(SlateWidgetToFocus.ToSharedRef());
 			}
-			
+
 		}
 	}
 	return Super::NativeOnFocusReceived(InGeometry, InFocusEvent);
@@ -62,11 +63,13 @@ FReply UWidget_ListEntry_Base::NativeOnFocusReceived(const FGeometry& InGeometry
 }
 void UWidget_ListEntry_Base::OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject)
 {
+	// 设置标题文本
 	if (CommonText_SettingDisplayName)
 	{
 		CommonText_SettingDisplayName->SetText(InListDataObject->GetDataDisplayName());
 	}
 
+	// 绑定数据修改事件（防止重复绑定）
 	if (!InListDataObject->OnListDataModified.IsBoundToObject(this))
 	{
 		InListDataObject->OnListDataModified.AddUObject(
@@ -75,6 +78,7 @@ void UWidget_ListEntry_Base::OnOwningListDataObjectSet(UListDataObject_Base* InL
 		);
 	}
 
+	// 绑定依赖数据修改事件
 	if (!InListDataObject->OnDependencyDataModified.IsBoundToObject(this))
 	{
 		InListDataObject->OnDependencyDataModified.AddUObject(
@@ -84,11 +88,11 @@ void UWidget_ListEntry_Base::OnOwningListDataObjectSet(UListDataObject_Base* InL
 		);
 	}
 
-
+	// 初始化可编辑状态
 	OnToggleEditableState(InListDataObject->IsDataCurrentlyEditable());
 
 	CachedOwningDataObject = InListDataObject;
-	
+
 }
 
 void UWidget_ListEntry_Base::OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason ModifyReason)

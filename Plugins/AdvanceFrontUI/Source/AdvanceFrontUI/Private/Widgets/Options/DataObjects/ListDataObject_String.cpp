@@ -7,17 +7,19 @@
 
 void UListDataObject_String::OnDataObjectInitialized()
 {
+	// 默认选中第一个选项
 	if (!AvaiableOptionsStringArray.IsEmpty())
 	{
 		CurrentStringValue = AvaiableOptionsStringArray[0];
 	}
 
+	// 如果有默认值，覆盖当前选中
 	if (HasDefaultValue())
 	{
 		CurrentStringValue = GetDefualtValueAsString();
 	}
 
-
+	// 从 getter 读取当前实际值（优先级最高）
 	if (DataDynamicGetter)
 	{
 		if (!DataDynamicGetter->GetValueAsString().IsEmpty())
@@ -26,6 +28,7 @@ void UListDataObject_String::OnDataObjectInitialized()
 		}
 	}
 
+	// 根据字符串值查找对应的显示文本
 	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
 	{
 		CurrentDisplayText = FText::FromString("Invalid Options");
@@ -186,6 +189,7 @@ void UListDataObject_StringInteger::OnDataObjectInitialized()
 {
 	Super::OnDataObjectInitialized();
 
+	// 如果当前值不在预设列表中则显示 "Custom"（如 OverallQuality 被其他设置间接修改）
 	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
 	{
 		CurrentDisplayText = FText::FromString(TEXT("Custom"));
@@ -196,12 +200,13 @@ void UListDataObject_StringInteger::OnEditDependencyDataModifiied(UListDataObjec
 {
 	if (DataDynamicGetter)
 	{
+		// 如果值未变化则无需更新
 		if (CurrentStringValue == DataDynamicGetter->GetValueAsString())
 		{
 			return;
 		}
 
-
+		// 从 getter 同步最新值
 		CurrentStringValue = DataDynamicGetter->GetValueAsString();
 
 		if (!TrySetDisplayTextByStringValue(CurrentStringValue))

@@ -27,6 +27,7 @@ FSlateBrush UListDataObject_KeyRemap::GetIconFromCurrentKey() const
 
 	check(CommonInputSubsystem);
 
+	// 从平台设置中尝试获取当前按键对应的图标 Brush
 	const bool bHasFoundBrush = UCommonInputPlatformSettings::Get()->TryGetInputBrush(FoundBrush,
 		GetOwningKeyMapping()->GetCurrentKey(),
 		CachedDesiredInputKeyType,
@@ -35,11 +36,7 @@ FSlateBrush UListDataObject_KeyRemap::GetIconFromCurrentKey() const
 
 	if (!bHasFoundBrush)
 	{
-		//FrontendUIDebugHelper::Log(
-		//	TEXT("Unable to find an icon for the key") +
-		//	GetOwningKeyMapping()->GetCurrentKey().GetDisplayName().ToString() +
-		//	TEXT("Empty Brush was applied")
-		//);
+		// 未找到图标时返回空 Brush（调试日志已注释）
 	}
 
 
@@ -50,6 +47,7 @@ void UListDataObject_KeyRemap::BindNewInputKey(const FKey& InNewKey)
 {
 	check(CachedOwningInputUserSettings);
 
+	// 构造按键映射参数
 	FMapPlayerKeyArgs KeyArgs;
 	KeyArgs.MappingName = CachedOwningMappingName;
 	KeyArgs.Slot = CachedOwningMappableKeySlot;
@@ -57,9 +55,11 @@ void UListDataObject_KeyRemap::BindNewInputKey(const FKey& InNewKey)
 
 	FGameplayTagContainer Container;
 
+	// 执行按键映射并立即保存
 	CachedOwningInputUserSettings->MapPlayerKey(KeyArgs, Container);
 	CachedOwningInputUserSettings->SaveSettings();
 
+	// 通知数据已修改（触发 UI 刷新）
 	NotifyListDataModified(this);
 }
 

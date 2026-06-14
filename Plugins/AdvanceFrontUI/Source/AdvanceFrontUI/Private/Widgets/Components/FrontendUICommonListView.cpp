@@ -12,13 +12,13 @@
 
 UUserWidget& UFrontendUICommonListView::OnGenerateEntryWidgetInternal(UObject* Item, TSubclassOf<UUserWidget> DesiredEntryClass, const TSharedRef<STableViewBase>& OwnerTable)
 {
-	// TODO: 在此处插入 return 语句
+	// 设计时使用默认生成逻辑
 	if (IsDesignTime())
 	{
 		return Super::OnGenerateEntryWidgetInternal(Item, DesiredEntryClass, OwnerTable);
 	}
 
-
+	// 运行时通过 DataListEntryMapping 查找匹配的条目控件类
 	if (TSubclassOf<UWidget_ListEntry_Base> FoundWidgetClass = DataListEntryMapping->FindEntryWidgetClassByDataObject(Cast<UListDataObject_Base>(Item)))
 	{
 		return GenerateTypedEntry<UWidget_ListEntry_Base>(FoundWidgetClass, OwnerTable);
@@ -31,6 +31,7 @@ UUserWidget& UFrontendUICommonListView::OnGenerateEntryWidgetInternal(UObject* I
 
 bool UFrontendUICommonListView::OnIsSelectableOrNavigableInternal(UObject* FirstSelectedItem)
 {
+	// ListDataObject_Collection 是分组容器，不可选中
 	return !FirstSelectedItem->IsA<UListDataObject_Collection>();
 }
 
@@ -38,6 +39,7 @@ bool UFrontendUICommonListView::OnIsSelectableOrNavigableInternal(UObject* First
 void UFrontendUICommonListView::ValidateCompiledDefaults(IWidgetCompilerLog& CompileLog) const
 {
 	Super::ValidateCompiledDefaults(CompileLog);
+	// 编译时验证：DataListEntryMapping 必须赋值
 	if (!DataListEntryMapping)
 	{
 		CompileLog.Error(FText::FromString(TEXT("The variable DataListEntryMapping is not assigned.")+

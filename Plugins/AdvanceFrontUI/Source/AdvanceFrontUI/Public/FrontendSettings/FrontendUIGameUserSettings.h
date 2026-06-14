@@ -7,30 +7,35 @@
 #include "FrontendUIGameUserSettings.generated.h"
 
 /**
- * 
+ * 前端 UI 游戏用户设置
+ * 继承自 UGameUserSettings，管理前端 UI 相关的持久化用户偏好设置：
+ * - Gameplay: 游戏难度
+ * - Audio: 主音量、音乐音量、音效音量、后台音频开关、HDR 音频开关
+ * - Video: 显示伽马值
+ * 通过 FOptionsDataInteractionHelper 的 PropertyPath 机制与选项界面数据对象桥接。
  */
 UCLASS()
 class ADVANCEFRONTUI_API UFrontendUIGameUserSettings : public UGameUserSettings
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UFrontendUIGameUserSettings();
 
+	/** 获取前端游戏用户设置的单例实例 */
 	static UFrontendUIGameUserSettings* GetFrontendUIGameUserSettings();
 
-	//GameplayCollectionTab
+	// ========== Gameplay 选项卡 ==========
 	UFUNCTION()
 	FString GetCurrentGameDifficulty() const { return CurrentGameDifficulty; }
 
 	UFUNCTION()
 	void SetCurrentGameDifficulty(const FString& InDifficulty) { CurrentGameDifficulty = InDifficulty; }
-
-	//GameplayCollectionTab
-
+	// ========== Gameplay 选项卡 ==========
 
 
-	//Audio Collection Tab
+
+	// ========== Audio 选项卡 ==========
 	UFUNCTION()
 	float GetCurrentOverallVolume() const { return OverallVolume;}
 
@@ -60,28 +65,27 @@ public:
 
 	UFUNCTION()
 	void SetCurrentUserHDRAudio(bool InUserHDRAudio);
-
-	//Audio Collection Tab
-
+	// ========== Audio 选项卡 ==========
 
 
-	////VideoCollectionTab
+
+	// ========== Video 选项卡 ==========
 	UFUNCTION()
 	float GetCurrentDisplayGamma() const;
 
 	UFUNCTION()
 	void SetCurrentDisplayGamma(const float& InDisplayGamma);
-	////VideoCollectionTab
-	
+	// ========== Video 选项卡 ==========
+
 private:
 
-	//Gameplay Collection Tab
+	// ========== Gameplay 选项卡数据 ==========
 	UPROPERTY(Config)
 	FString CurrentGameDifficulty;
-	//Gameplay Collection Tab
+	// ========== Gameplay 选项卡数据 ==========
 
 
-	//Audio Collection Tab
+	// ========== Audio 选项卡数据 ==========
 	UPROPERTY(Config)
 	float OverallVolume;
 
@@ -96,14 +100,11 @@ private:
 
 	UPROPERTY(Config)
 	bool bUserHDRAudio;
-
-	//Audio Collection Tab
-
-	
-	//VideoCollectionTab
-	
+	// ========== Audio 选项卡数据 ==========
 
 
-	//VideoCollectionTab
+	// ========== Video 选项卡数据 ==========
+
+	// ========== Video 选项卡数据 ==========
 
 };

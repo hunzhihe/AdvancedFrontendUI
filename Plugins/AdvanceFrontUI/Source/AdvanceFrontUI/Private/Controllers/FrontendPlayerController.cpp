@@ -11,8 +11,8 @@ void AFrontendPlayerController::OnPossess(APawn *InPawn)
 {
     Super::OnPossess(InPawn);
 
+    // 查找标记为 "MainMenuUICamera" 的摄像机并切换到该视角
     TArray<AActor*> Cameras;
-    // Set the input mode to UI only and show the mouse cursor
     UGameplayStatics::GetAllActorsOfClassWithTag(this, ACameraActor::StaticClass(), FName("MainMenuUICamera"), Cameras);
     if (Cameras.Num() > 0)
     {
@@ -23,6 +23,7 @@ void AFrontendPlayerController::OnPossess(APawn *InPawn)
         }
     }
 
+    // 首次运行时执行硬件基准测试以获取推荐的可扩展性设置
     UFrontendUIGameUserSettings* GameUserSetting =  UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings();
 
     if (GameUserSetting->GetLastCPUBenchmarkResult() == -1.f || GameUserSetting->GetLastGPUBenchmarkResult()==-1.f)

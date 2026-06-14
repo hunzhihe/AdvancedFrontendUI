@@ -12,14 +12,17 @@ void UWidget_ListEntry_String::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
+	// 绑定前后翻页按钮点击事件
 	CommonButton_PreviousOption->OnClicked().AddUObject(this, &UWidget_ListEntry_String::OnPreviousOptionButtonClicked);
 	CommonButton_NextOption->OnClicked().AddUObject(this, &UWidget_ListEntry_String::OnNextOptionButtonClicked);
 
+	// 点击 Rotator 时选中此列表条目
 	CommonRotator_AvailableOptions->OnClicked().AddLambda([this]()
 		{
 			SelectThisListEntryWidget();
 		});
 
+	// 绑定 Rotator 旋转事件
 	CommonRotator_AvailableOptions->OnRotatedEvent.AddUObject(this, &ThisClass::OnRotatorValueChanged);
 
 }
@@ -80,6 +83,7 @@ void UWidget_ListEntry_String::OnRotatorValueChanged(int32 Value, bool bUserInit
 	}
 	UCommonInputSubsystem* CommonInputSubsystem = GetInputSubsystem();
 
+	// 仅处理用户主动操作且为手柄输入的情况
 	if (!CommonInputSubsystem || !bUserInitiated)
 	{
 		return;

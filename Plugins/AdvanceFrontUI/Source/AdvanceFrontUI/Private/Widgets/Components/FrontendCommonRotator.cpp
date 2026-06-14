@@ -6,6 +6,7 @@
 
 void UFrontendCommonRotator::SetSelectedOptionByText(const FText& OptionText)
 {
+	// 在 TextLabels 数组中查找匹配的文本
    const int32 FoundIndex = TextLabels.IndexOfByPredicate(
 		[OptionText](const FText& Text)
 		{
@@ -13,6 +14,7 @@ void UFrontendCommonRotator::SetSelectedOptionByText(const FText& OptionText)
 		}
 	);
 
+	// 找到则选中对应索引，未找到则直接显示文本
    if (FoundIndex != INDEX_NONE)
    {
 	   SetSelectedItem(FoundIndex);

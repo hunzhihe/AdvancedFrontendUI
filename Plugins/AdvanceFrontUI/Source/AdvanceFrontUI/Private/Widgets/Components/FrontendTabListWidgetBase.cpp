@@ -23,9 +23,11 @@ void UFrontendTabListWidgetBase::ValidateCompiledDefaults(IWidgetCompilerLog &Co
 
 void UFrontendTabListWidgetBase::RequestRegisterTab(const FName& InTabID, const FText& InTabDisplayName)
 {
+	// 注册选项卡按钮
     RegisterTab(InTabID, TabButtonEntryWidgetClass, nullptr);
+    // 设置选项卡的显示文本
     if (UFrontendCommonButtonBase* FoundButton =  Cast<UFrontendCommonButtonBase>(GetTabButtonBaseByID(InTabID)))
     {
         FoundButton->SetButtonText(InTabDisplayName);
-    }  
+    }
 }

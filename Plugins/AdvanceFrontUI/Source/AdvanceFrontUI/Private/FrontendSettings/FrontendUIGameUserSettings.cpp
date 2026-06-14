@@ -14,7 +14,7 @@ UFrontendUIGameUserSettings::UFrontendUIGameUserSettings()
 
 UFrontendUIGameUserSettings* UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()
 {
-
+	// 从 GEngine 中获取游戏用户设置单例
 	if (GEngine)
 	{
 		return CastChecked<UFrontendUIGameUserSettings>(GEngine->GetGameUserSettings());
@@ -52,7 +52,7 @@ void UFrontendUIGameUserSettings::SetCurrentUserHDRAudio(bool InUserHDRAudio)
 
 float UFrontendUIGameUserSettings::GetCurrentDisplayGamma() const
 {
-
+	// 从 GEngine 读取当前的显示伽马值
 	if (GEngine)
 	{
 		return GEngine->GetDisplayGamma();
@@ -63,9 +63,10 @@ float UFrontendUIGameUserSettings::GetCurrentDisplayGamma() const
 
 void UFrontendUIGameUserSettings::SetCurrentDisplayGamma(const float& InDisplayGamma)
 {
+	// 直接修改 GEngine 的显示伽马值
 	if (GEngine)
 	{
 		GEngine->DisplayGamma = InDisplayGamma;
 	}
-	
+
 }
