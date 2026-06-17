@@ -2,6 +2,9 @@
 
 
 #include "FrontendSettings/FrontendUIGameUserSettings.h"
+#include "Internationalization/Internationalization.h"
+#include "Subsystem/FrontendUISubsystem.h"
+#include "Engine/GameInstance.h"
 
 UFrontendUIGameUserSettings::UFrontendUIGameUserSettings()
 	:OverallVolume(1.F)
@@ -21,6 +24,32 @@ UFrontendUIGameUserSettings* UFrontendUIGameUserSettings::GetFrontendUIGameUserS
 	}
 
 	return nullptr;
+}
+
+
+static EWindowMode::Type GetPlatformFullscreenMode(int InFullscreenMode)
+{
+	EWindowMode::Type Mode = EWindowMode::ConvertIntToWindowMode(InFullscreenMode);
+
+	return (!FPlatformProperties::SupportsWindowedMode()) ? EWindowMode::Fullscreen : Mode;
+}
+
+static FString GetCultureCodeForLanguage(ELaughageChanged Language)
+{
+	switch (Language)
+	{
+	case ELaughageChanged::English: return TEXT("en");
+	case ELaughageChanged::ZH_Ch:   return TEXT("zh-Hans");
+	default:                        return TEXT("");
+	}
+}
+
+
+
+void UFrontendUIGameUserSettings::SetCurrentLanguage(const ELaughageChanged InCurrentLanguage)
+{
+	// 1. 存储设置值
+	CurrentGameLaughage = InCurrentLanguage;
 }
 
 void UFrontendUIGameUserSettings::SetCurrentOverallVolume(const float& InOverallVolume)

@@ -26,7 +26,9 @@ public class AdvanceFrontUI : ModuleRules
 			new string[]
 			{
 				"Core",
-				"GameplayTags",
+                "CoreUObject",
+                "Engine",
+                "GameplayTags",
 				"UMG",
 				"CommonUI",    // 添加这一行
 				"InputCore", // <--- 添加这一行
@@ -34,6 +36,8 @@ public class AdvanceFrontUI : ModuleRules
                 "EnhancedInput",
                 "PropertyPath",
                 "PreLoadScreen"
+              
+              
 
 				// ... add other public dependencies that you statically link with here ...
 			}

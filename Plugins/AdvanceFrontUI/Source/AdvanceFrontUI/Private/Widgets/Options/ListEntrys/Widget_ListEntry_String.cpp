@@ -6,7 +6,12 @@
 #include "Widgets/Components/FrontendCommonRotator.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "CommonInputSubsystem.h"
+#include "Internationalization/StringTableRegistry.h"
+
 #include "FrontendUIDebugHelper.h"
+
+
+#define GET_Zh_DESCRIPTION(InKey)LOCTABLE("/Game/Blueprints/UI/StringTable/ST_ZH_OptionScreenDescription.ST_ZH_OptionScreenDescription", InKey)
 
 void UWidget_ListEntry_String::NativeOnInitialized()
 {
@@ -62,6 +67,11 @@ void UWidget_ListEntry_String::OnPreviousOptionButtonClicked()
 	if (CachedOwningStringDataObject)
 	{
 		CachedOwningStringDataObject->BackToPerviousOption();
+		//if ( CachedOwningStringDataObject->GetDataID() == FName("Language"))
+		//{
+		//	FName LanguageName = CachedOwningStringDataObject->GetDataID();
+		//	CachedOwningStringDataObject->SetDescriptionRichText(GET_Zh_DESCRIPTION(""))
+		//}
 	}
 	SelectThisListEntryWidget();
 }

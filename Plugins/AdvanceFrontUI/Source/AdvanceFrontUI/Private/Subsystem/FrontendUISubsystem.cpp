@@ -10,6 +10,7 @@
 #include "Widgets/Widget_ConformScreen.h"
 #include "FrontendGameplayTags.h"
 #include "FrontendUIFunctionLibrary.h"
+#include "FrontendSettings/FrontendUIGameUserSettings.h"
 
 
 
@@ -51,6 +52,11 @@ bool UFrontendUISubsystem::ShouldCreateSubsystem(UObject* Outer) const
             UE_LOG(LogTemp, Warning, TEXT("Multiple classes derived from UFrontendUISubsystem found. Subsystem will not be created. Please ensure only one class derives from UFrontendUISubsystem."));
             return false;
         }
+        
+        UGameUserSettings* Gameusersettings = GEngine->GetGameUserSettings();
+
+        //Gameusersettings->SetCurrentLanguage()
+
         return true;
     }
     // 专用服务器上不创建 UI 子系统

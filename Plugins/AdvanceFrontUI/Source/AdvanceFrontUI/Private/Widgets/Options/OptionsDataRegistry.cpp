@@ -16,6 +16,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "Widgets/Options/DataObjects/ListDataObject_KeyRemap.h"
+#include "Subsystem/FrontendUISubsystem.h"
+
 
 #include "FrontendUIDebugHelper.h"
 
@@ -23,7 +25,9 @@
 
 #define MAKE_OPTIONS_DATA_CONTROL(SetterOrGetterFuncName) \
  MakeShared<FOptionsDataInteractionHelper>(GET_FUNCTION_NAME_STRING_CHECKED(UFrontendUIGameUserSettings, SetterOrGetterFuncName))
-#define GET_DESCRIPTION(InKey)LOCTABLE("/Game/Blueprints/UI/StringTable/ST_OptionsScreenDescription.ST_OptionsScreenDescription", InKey)
+#define GET_DESCRIPTION(InKey)LOCTABLE("/Game/Blueprints/UI/StringTable/ST_OptionsScreenDescription.ST_OptionsScreenDescription",  InKey)
+#define GET_Zh_DESCRIPTION(InKey)LOCTABLE("/Game/Blueprints/UI/StringTable/ST_ZH_OptionScreenDescription.ST_ZH_OptionScreenDescription", InKey)
+
 
 void UOptionsDataRegistry::InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPlayer)
 {
@@ -31,6 +35,19 @@ void UOptionsDataRegistry::InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPl
 	InitAudioCollectionTab();
 	InitVideoCollectionYab();
 	InitControlCollectionTab(InOwningLocalPlayer);
+
+	// 获取 World（通过 LocalPlayer 的 ViewportClient）
+	UWorld* World = InOwningLocalPlayer->GetWorld();
+	if (World)
+	{
+		CachedWorld = World;
+	}
+
+	//if (UFrontendUISubsystem::Get(CachedWorld->GetWorld()))
+	//{
+	//	FrontendUIDebugHelper::Log(TEXT("FrontendUISubsystem is ready"));
+	//};
+
 
 }
 
@@ -105,7 +122,18 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 		UListDataObject_String* GameDifficultyOption = NewObject<UListDataObject_String>();
 		GameDifficultyOption->SetDataID(FName("GameDifficultyOption"));
 		GameDifficultyOption->SetDataDisplayName(FText::FromString(TEXT("Game Difficulty")));
-		GameDifficultyOption->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the difficulty of the game experience.\n\n<Bold>Easy:</> Focuses on the story experience. Provides the most relaxing combat.\n\n<Bold>Normal:</> Offers slightly harder combat experience\n\n<Bold>Hard:</> Offers a much more challenging combat experience\n\n<Bold>Vert Hard:</> Provides the most challenging combat experience. Not recommended for first play through.")));
+		
+		//语言切换功能简单测试（项目初始化时）
+		if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() ==ELaughageChanged::English)
+		{
+			GameDifficultyOption->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the difficulty of the game experience.\n\n<Bold>Easy:</> Focuses on the story experience. Provides the most relaxing combat.\n\n<Bold>Normal:</> Offers slightly harder combat experience\n\n<Bold>Hard:</> Offers a much more challenging combat experience\n\n<Bold>Vert Hard:</> Provides the most challenging combat experience. Not recommended for first play through.")));
+		}
+		else if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() == ELaughageChanged::ZH_Ch)
+		{
+			GameDifficultyOption->SetDescriptionRichText(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, "WindowModeDescKey"));
+		}
+		//GameDifficultyOption->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the difficulty of the game experience.\n\n<Bold>Easy:</> Focuses on the story experience. Provides the most relaxing combat.\n\n<Bold>Normal:</> Offers slightly harder combat experience\n\n<Bold>Hard:</> Offers a much more challenging combat experience\n\n<Bold>Vert Hard:</> Provides the most challenging combat experience. Not recommended for first play through.")));
+		//GameDifficultyOption->SetDescriptionRichText(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, "WindowModeDescKey"));
 
 		GameDifficultyOption->AddDynamicOption(TEXT("Easy"), FText::FromString(TEXT("Easy")));
 		GameDifficultyOption->AddDynamicOption(TEXT("Medium"), FText::FromString(TEXT("Medium")));
@@ -118,6 +146,9 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 
 		GameplayTabCollection->AddChildListData(GameDifficultyOption);
 	}
+
+
+
 	//Test Item
 	{
 		UListDataObject_String* TestItemOption = NewObject<UListDataObject_String>();
@@ -126,9 +157,30 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 		TestItemOption->SetSoftDiscriptionImage(UFrontendUIFunctionLibrary::GetOptionsSoftImage(FrontendGameplayTags::Frontend_Image_TestIamge));
 		TestItemOption->SetDescriptionRichText(FText::FromString(TEXT("The Image to display can be specified in the settings,it can be anything the Developer assigned in there")));
 
-
 		GameplayTabCollection->AddChildListData(TestItemOption);
 	}
+    
+
+	//Language
+	{
+		//const FText WindowModeDesc =  LOCTABLE("/Game/Blueprints/UI/StringTable/ST_OptionsScreenDescription.ST_OptionsScreenDescription","WindowModeDescKey");
+
+		UListDataObject_StringEnum* Language = NewObject<UListDataObject_StringEnum>();
+		Language->SetDataID(FName("Language"));
+		Language->SetDataDisplayName(FText::FromString(TEXT("Language")));
+		//Language->SetDescriptionRichText(GET_DESCRIPTION("LanguageDescKey"));
+		Language->AddEnumOptions(ELaughageChanged::English, FText::FromString(TEXT("English")));
+		Language->AddEnumOptions(ELaughageChanged::ZH_Ch, FText::FromString(TEXT("ZH_Ch")));
+		Language->SetDefaultValueFromString(TEXT("English"));
+		Language->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentLanguage));
+		Language->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentLanguage));
+		Language->SetShouldApplySettingsImmediately(true);
+
+
+		GameplayTabCollection->AddChildListData(Language);
+	}
+
+
 
 	RegisteredOptionsTabCollections.Add(GameplayTabCollection);
 }
@@ -696,7 +748,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			UListDataObject_String* FrameRateLimit = NewObject<UListDataObject_String>();
 			FrameRateLimit->SetDataID(FName("FrameRateLimit"));
 			FrameRateLimit->SetDataDisplayName(FText::FromString(TEXT("FrameRateLimit")));
-			FrameRateLimit->SetDescriptionRichText(GET_DESCRIPTION("FrameRateLimitDescKey"));
+			//FrameRateLimit->SetDescriptionRichText(GET_DESCRIPTION("FrameRateLimitDescKey"));
 			FrameRateLimit->AddDynamicOption(LexToString(30.f), FText::FromString(TEXT("30 FPS")));
 			FrameRateLimit->AddDynamicOption(LexToString(60.f), FText::FromString(TEXT("60 FPS")));
 			FrameRateLimit->AddDynamicOption(LexToString(90.f), FText::FromString(TEXT("90 FPS")));

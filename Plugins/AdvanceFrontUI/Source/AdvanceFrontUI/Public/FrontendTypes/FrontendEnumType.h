@@ -31,3 +31,11 @@ enum class EOptionsLsitDataModifyReason : uint8
 	ResetToDefault,     // 重置为默认值
 	Unknown UMETA(Hidden) // 未知（隐藏）
 };
+
+UENUM(BlueprintType)
+enum class ELaughageChanged : uint8
+{
+	ZH_Ch,   
+	English,   
+	Unknown UMETA(Hidden) // 未知（隐藏）
+};

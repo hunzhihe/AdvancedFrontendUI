@@ -3,6 +3,9 @@
 
 #include "FrontendUIFunctionLibrary.h"
 #include "FrontendUIDebugHelper.h"
+#include "Internationalization/StringTableRegistry.h"
+#include "Internationalization/Text.h"
+#include "FrontendTypes/FrontendEnumType.h"
 #include "FrontendSettings/FrontendDeveloperSettings.h"
 
 TSoftClassPtr<UWidget_ActivatableBase> UFrontendUIFunctionLibrary::GetFrontendWidgetFromTag(
@@ -33,4 +36,23 @@ TSoftObjectPtr<UTexture2D> UFrontendUIFunctionLibrary::GetOptionsSoftImage(
         TEXT("Could not find an Image accociated with tag %s"), *ImageTag.ToString());
 
     return FrontendDeveloperSettings->OptionsScreenSoftImageMap.FindRef(ImageTag);
+}
+
+FText UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(const ELaughageChanged CurrentLanguage, const FString& Key)
+{
+
+    //默认英文语境
+    FName TableId = TEXT("/Game/Blueprints/UI/StringTable/ST_OptionScreenDescription.ST_OptionScreenDescription");
+
+    // 或者根据条件切换：
+    if (CurrentLanguage == ELaughageChanged::English)
+        TableId = TEXT("/Game/Blueprints/UI/StringTable/ST_OptionsScreenDescription.ST_OptionsScreenDescription");
+    else if (CurrentLanguage == ELaughageChanged::ZH_Ch)
+        TableId = TEXT("/Game/Blueprints/UI/StringTable/ST_ZH_OptionScreenDescription.ST_ZH_OptionScreenDescription");
+
+    return FStringTableRegistry::Get().Internal_FindLocTableEntry(
+        TableId,                    // 表 ID（可以是任意 FString）
+        Key,                        // 键（FString）
+        EStringTableLoadingPolicy::FindOrLoad
+    );;
 }

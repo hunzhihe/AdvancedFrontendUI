@@ -72,12 +72,16 @@ class ADVANCEFRONTUI_API UListDataObject_StringEnum : public UListDataObject_Str
 	GENERATED_BODY()
 
 public:
+
+	
+
 	/** 添加一个枚举选项 */
 	template<typename EnumType>
 	void AddEnumOptions(EnumType InEnumOption, const FText& InDispalyText)
 	{
 		const UEnum* StaticEnumOption = StaticEnum<EnumType>();
-		const FString ConveretedEnumString =  StaticEnumOption->GetNameStringByValue(InEnumOption);
+		const int64  EnumValue = static_cast<int64>(InEnumOption);
+		const FString ConveretedEnumString =  StaticEnumOption->GetNameStringByValue(EnumValue);
 
 		AddDynamicOption(ConveretedEnumString, InDispalyText);
 
@@ -96,7 +100,7 @@ public:
 	void SetDefaultValueFromEnumOption(EnumType InEnumOption)
 	{
 		const UEnum* StaticEnumOption = StaticEnum<EnumType>();
-		const FString ConveretedEnumString = StaticEnumOption->GetNameStringValueBy(InEnumOption);
+		const FString ConveretedEnumString = StaticEnumOption->GetNameStringByValue(InEnumOption);
 
 		SetDefaultValueFromString(ConveretedEnumString);
 	}

@@ -45,6 +45,9 @@ private:
 	/** 初始化 Controls（按键映射）选项卡的数据集合 */
 	void InitControlCollectionTab(ULocalPlayer* InOwningLocalPlayer);
 
+	//维护该变量主要是为了获取UISubsystem,以便于语言切换在初始化时直接生效
+	TWeakObjectPtr<UWorld> CachedWorld;
+
 	/** 已注册的选项选项卡集合（Transient，运行时持有） */
 	UPROPERTY(Transient)
 	TArray<UListDataObject_Collection*> RegisteredOptionsTabCollections;

@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/FunctionLibrary.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 #include "GameplayTagContainer.h"
+#include "Internationalization/StringTableRegistry.h"
+#include "Internationalization/Text.h"
+#include "FrontendTypes/FrontendEnumType.h"
 #include "FrontendUIFunctionLibrary.generated.h"
 
 
@@ -41,4 +44,8 @@ class ADVANCEFRONTUI_API UFrontendUIFunctionLibrary : public UBlueprintFunctionL
 	UFUNCTION(BlueprintPure, Category = "Frontend UI Functions library")
 	static TSoftObjectPtr<UTexture2D>GetOptionsSoftImage(
 		UPARAM(meta = (Categories = "Frontend.Image"))FGameplayTag ImageTag);
+
+	UFUNCTION(BlueprintPure, Category = "Frontend UI Functions library")
+	static FText GetCurrentLanguageTextFromTable(const ELaughageChanged CurrentLanguage, const FString& Key);
+
 };

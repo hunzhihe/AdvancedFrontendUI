@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameUserSettings.h"
+#include "FrontendTypes/FrontendEnumType.h"
 #include "FrontendUIGameUserSettings.generated.h"
 
 /**
@@ -31,6 +32,12 @@ public:
 
 	UFUNCTION()
 	void SetCurrentGameDifficulty(const FString& InDifficulty) { CurrentGameDifficulty = InDifficulty; }
+
+	UFUNCTION()
+	ELaughageChanged GetCurrentLanguage() const { return CurrentGameLaughage; }
+
+	UFUNCTION()
+	void SetCurrentLanguage(const ELaughageChanged InCurrentLanguage);
 	// ========== Gameplay 选项卡 ==========
 
 
@@ -82,6 +89,10 @@ private:
 	// ========== Gameplay 选项卡数据 ==========
 	UPROPERTY(Config)
 	FString CurrentGameDifficulty;
+
+	UPROPERTY(Config)
+	ELaughageChanged CurrentGameLaughage;
+
 	// ========== Gameplay 选项卡数据 ==========
 
 

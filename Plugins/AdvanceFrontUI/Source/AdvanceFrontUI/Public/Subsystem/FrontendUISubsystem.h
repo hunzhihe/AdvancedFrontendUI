@@ -13,6 +13,7 @@
 class UWidget_PrimaryLayout;
 struct FGameplayTag;
 class UFrontendCommonButtonBase;
+class UFrontendUIGameUserSettings;
 
 /**
  * 异步推送控件时的状态枚举
@@ -27,6 +28,8 @@ enum class EAsyncPushWidgetState : uint8
 //多播委托，
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnButtonDescriptionTextUpdatedDelegate, UFrontendCommonButtonBase*, Button, FText, DescriptionText);
 
+//多播委托
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLanguageChangedButtonUpdatedDelegate, ELaughageChanged, Language);
 
 /**
  * 前端 UI 子系统（游戏实例子系统）
@@ -82,8 +85,12 @@ public:
     UPROPERTY(BlueprintAssignable)
     FOnButtonDescriptionTextUpdatedDelegate OnButtonDescriptionTextUpdated;
 
+    UPROPERTY(BlueprintAssignable)
+    FOnLanguageChangedButtonUpdatedDelegate OnLanguageChangedButtonUpdated;
+
 private:
     /** 已创建的主布局控件指针（不参与序列化，运行时临时持有） */
     UPROPERTY(Transient)
     UWidget_PrimaryLayout* CreatedPrimaryLayoutWidget;
+    
 };
