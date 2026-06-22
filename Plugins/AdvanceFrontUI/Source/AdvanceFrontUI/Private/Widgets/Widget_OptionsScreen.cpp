@@ -44,6 +44,10 @@ void UWidget_OptionsScreen::NativeOnInitialized()
 	// 绑定列表项悬停和选中事件
     CommonListView_OptionsList->OnItemIsHoveredChanged().AddUObject(this, &ThisClass::OnListViewItemHovered);
     CommonListView_OptionsList->OnItemSelectionChanged().AddUObject(this, &ThisClass::OnListViewItemSelectionChanged);
+
+    //绑定语言更新事件
+    UFrontendUISubsystem* UISubsystem = UFrontendUISubsystem::Get(this);
+    UISubsystem->OnRegistryNewOptionsData.BindUObject(this, &ThisClass::RefreshLocalizedDataRegistry);
 }
 
 void UWidget_OptionsScreen::NativeOnActivated()
@@ -100,6 +104,68 @@ UOptionsDataRegistry *UWidget_OptionsScreen::GetOrCreateDataRegistry()
 
 
     return CreatedOwningDataRegistry;
+}
+
+//void UWidget_OptionsScreen::UpdateDataRegistry()
+//{
+//    if (!CreatedOwningDataRegistry)
+//    {
+//        CreatedOwningDataRegistry = NewObject<UOptionsDataRegistry>();
+//        //CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
+//    }
+//    else
+//    {
+//        CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
+//    }
+//}
+
+void UWidget_OptionsScreen::RefreshLocalizedDataRegistry()
+{
+    // 确保 DataRegistry 已创建
+    if (!CreatedOwningDataRegistry)
+    {
+        return;
+    }
+
+    // 刷新所有数据对象的本地化文本（原地更新，不重建对象）
+    CreatedOwningDataRegistry->RefreshAllLocalizedText();
+
+    // 刷新选项卡按钮的显示文本
+    for (UListDataObject_Collection* TabCollection : CreatedOwningDataRegistry->GetRegisteredOptionsTabCollections())
+    {
+        if (!TabCollection)
+        {
+            continue;
+        }
+        if (UCommonButtonBase* TabButton = TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabCollection->GetDataID()))
+        {
+            if (UFrontendCommonButtonBase* FrontendButton = Cast<UFrontendCommonButtonBase>(TabButton))
+            {
+                FrontendButton->SetButtonText(TabCollection->GetDataDisplayName());
+            }
+        }
+    }
+
+    // 遍历当前列表中所有已创建的条目控件，强制其从数据对象中重新读取本地化文本
+    // 不依赖 SetListItems + RequestRefresh 重建，因为相同对象指针可能被 ListView 优化跳过
+    const TArray<UObject*>& ListItems = CommonListView_OptionsList->GetListItems();
+    for (UObject* Item : ListItems)
+    {
+        if (UUserWidget* EntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem(Item))
+        {
+            if (UWidget_ListEntry_Base* EntryBase = Cast<UWidget_ListEntry_Base>(EntryWidget))
+            {
+                // 触发子类重新从数据对象读取显示文本（如 Rotator 标签、选中项文本）
+                EntryBase->OnOwningListDataObjectSet(CastChecked<UListDataObject_Base>(Item));
+            }
+        }
+    }
+
+    // 同时刷新详情视图中的描述文本
+    if (UListDataObject_Base* SelectedItem = CommonListView_OptionsList->GetSelectedItem<UListDataObject_Base>())
+    {
+        DetailView_ListEntryInfo->UpdateDetailView(SelectedItem, TryGetEntryWidgetClassName(SelectedItem));
+    }
 }
 
 

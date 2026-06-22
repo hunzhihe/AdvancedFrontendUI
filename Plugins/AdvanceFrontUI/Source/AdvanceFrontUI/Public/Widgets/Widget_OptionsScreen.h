@@ -40,6 +40,11 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 			/** 获取或懒创建选项数据注册表 */
 		    UOptionsDataRegistry* GetOrCreateDataRegistry();
 
+			//void UpdateDataRegistry();
+
+			/** 语言切换时刷新所有数据对象的本地化文本（原地更新，不重建对象） */
+			void RefreshLocalizedDataRegistry();
+
 			/** 重置为默认值操作触发时的回调 */
 		    void OnResetBoundActionTriggered();
 			/** 返回操作触发时的回调 */
@@ -73,7 +78,7 @@ class ADVANCEFRONTUI_API UWidget_OptionsScreen : public UWidget_ActivatableBase
 
 			//BoundWidgets
 
-			/** 懒创建的选项数据注册表（Transient，不序列化） */
+			/** 懒创建的选项数据注册表 */
 			UPROPERTY(Transient)
 			UOptionsDataRegistry* CreatedOwningDataRegistry;
 

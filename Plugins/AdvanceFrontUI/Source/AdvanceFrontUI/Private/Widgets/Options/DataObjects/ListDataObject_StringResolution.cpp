@@ -36,6 +36,13 @@ void UListDataObject_StringResolution::InitResolutionValues()
 	SetDefaultValueFromString(MaximumAllowedResolution);
 }
 
+void UListDataObject_StringResolution::RefreshLocalizedText()
+{
+	// 只刷新描述和显示名称（基类逻辑），跳过选项值文本本地化
+	// 分辨率字符串如 "(1920 x 1080)" 是技术值，不需要本地化
+	UListDataObject_Base::RefreshLocalizedText();
+}
+
 void UListDataObject_StringResolution::OnDataObjectInitialized()
 {
 

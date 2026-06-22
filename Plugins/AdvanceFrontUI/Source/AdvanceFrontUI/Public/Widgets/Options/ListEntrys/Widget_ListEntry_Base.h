@@ -29,6 +29,10 @@ public:
 	/** 原生悬停处理，触发蓝图事件并更新高亮状态 */
 	void NativeOnListEntryWidgetHovered(bool bWasHovered);
 
+
+	/** 当列表数据对象设置到此条目时调用（子类可重写以初始化具体的 UI 控件） */
+	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject);
+
 protected:
 	/** 蓝图实现事件：当手柄导航时返回需要聚焦的子控件 */
 	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "GetWidgetToFocusForGamepad"))
@@ -48,8 +52,7 @@ protected:
 	virtual FReply NativeOnFocusReceived(const FGeometry& InGeometry, const FFocusEvent& InFocusEvent) override;
 	//End UUserWidget Interface
 
-	/** 当列表数据对象设置到此条目时调用（子类可重写以初始化具体的 UI 控件） */
-	virtual void OnOwningListDataObjectSet(UListDataObject_Base* InListDataObject);
+	
 
 	/** 当关联的列表数据对象被修改时调用 */
 	virtual void OnOwingListDataObjectModifed(UListDataObject_Base* OwningModifiedData, EOptionsLsitDataModifyReason  ModifyReason);

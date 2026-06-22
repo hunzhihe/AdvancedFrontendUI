@@ -7,6 +7,8 @@
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "CommonInputSubsystem.h"
 #include "Internationalization/StringTableRegistry.h"
+#include "FrontendSettings/FrontendUIGameUserSettings.h"
+#include "Subsystem/FrontendUISubsystem.h"
 
 #include "FrontendUIDebugHelper.h"
 
@@ -63,15 +65,25 @@ void UWidget_ListEntry_String::OnToggleEditableState(bool bIsEditable)
 
 void UWidget_ListEntry_String::OnPreviousOptionButtonClicked()
 {
-	
 	if (CachedOwningStringDataObject)
 	{
 		CachedOwningStringDataObject->BackToPerviousOption();
-		//if ( CachedOwningStringDataObject->GetDataID() == FName("Language"))
-		//{
-		//	FName LanguageName = CachedOwningStringDataObject->GetDataID();
-		//	CachedOwningStringDataObject->SetDescriptionRichText(GET_Zh_DESCRIPTION(""))
-		//}
+
+		// 语言切换时触发本地化文本刷新
+		if (CachedOwningStringDataObject->GetDataID() == FName("Language"))
+		{
+			if (UFrontendUISubsystem* FrontendUISubsystem = UFrontendUISubsystem::Get(this))
+			{
+				FrontendUISubsystem->OnRegistryNewOptionsData.ExecuteIfBound();
+
+				// 测试：打印刷新后的显示文本数组
+				const TArray<FText>& DisplayTextArray = CachedOwningStringDataObject->GetAvaiableOptionsDisplayTextArray();
+				for (int32 i = 0; i < DisplayTextArray.Num(); ++i)
+				{
+					FrontendUIDebugHelper::Log(FString::Printf(TEXT("DisplayText[%d]: %s"), i, *DisplayTextArray[i].ToString()));
+				}
+			}
+		}
 	}
 	SelectThisListEntryWidget();
 }
@@ -81,6 +93,17 @@ void UWidget_ListEntry_String::OnNextOptionButtonClicked()
 	if (CachedOwningStringDataObject)
 	{
 		CachedOwningStringDataObject->AdvanceToNextOption();
+
+		// 语言切换时触发本地化文本刷新
+		if (CachedOwningStringDataObject->GetDataID() == FName("Language"))
+		{
+			if (UFrontendUISubsystem* FrontendUISubsystem = UFrontendUISubsystem::Get(this))
+			{
+				FrontendUISubsystem->OnRegistryNewOptionsData.ExecuteIfBound();
+
+				CachedOwningStringDataObject->GetCurrentDisplayText();
+			}
+		}
 	}
 	SelectThisListEntryWidget();
 }
@@ -102,5 +125,14 @@ void UWidget_ListEntry_String::OnRotatorValueChanged(int32 Value, bool bUserInit
 	if (CommonInputSubsystem->GetCurrentInputType() == ECommonInputType::Gamepad)
 	{
 		CachedOwningStringDataObject->OnRotatorInitiatedValueChange(CommonRotator_AvailableOptions->GetSelectedText());
+
+		// 语言切换时触发本地化文本刷新
+		if (CachedOwningStringDataObject->GetDataID() == FName("Language"))
+		{
+			if (UFrontendUISubsystem* FrontendUISubsystem = UFrontendUISubsystem::Get(this))
+			{
+				FrontendUISubsystem->OnRegistryNewOptionsData.ExecuteIfBound();
+			}
+		}
 	}
 }

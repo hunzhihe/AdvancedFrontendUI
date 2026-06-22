@@ -38,6 +38,14 @@ public:
 	LIST_DATA_ACCESSOR(TSoftObjectPtr<UTexture2D>, SoftDiscriptionImage);
 	LIST_DATA_ACCESSOR(UListDataObject_Base*, ParentData);
 
+	/** 设置描述文本的本地化键（语言切换时用于从 StringTable 刷新 DescriptionRichText） */
+	void SetDescriptionLocalizationKey(const FString& InKey) { DescriptionLocalizationKey = InKey; }
+
+	/** 设置显示名称的本地化键（语言切换时用于从 StringTable 刷新 DataDisplayName） */
+	void SetDisplayNameLocalizationKey(const FString& InKey) { DisplayNameLocalizationKey = InKey; }
+
+	/** 刷新本地化文本（子类重写以实现各自的刷新逻辑，需调用 Super） */
+	virtual void RefreshLocalizedText();
 
 	void InitDataObject();
 
@@ -89,6 +97,12 @@ private:
 	FText DescriptionRichText;
 	FText DisabledRichText;
 	TSoftObjectPtr<UTexture2D> SoftDiscriptionImage;
+
+	/** 描述文本的本地化键，语言切换时用于从 StringTable 重新查表 */
+	FString DescriptionLocalizationKey;
+
+	/** 显示名称的本地化键，语言切换时用于从 StringTable 重新查表 */
+	FString DisplayNameLocalizationKey;
 
 	UPROPERTY(Transient)
 	UListDataObject_Base* ParentData;

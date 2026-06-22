@@ -31,6 +31,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnButtonDescriptionTextUpdatedDele
 //多播委托
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLanguageChangedButtonUpdatedDelegate, ELaughageChanged, Language);
 
+//单播委托，用于通知修改依赖本地化表格
+DECLARE_DELEGATE(FOnLanguageChangedRegistryNewOptionsDataDelegate);
+
 /**
  * 前端 UI 子系统（游戏实例子系统）
  * 负责管理整个前端界面的核心控件，如主布局控件的注册与查找、异步控件推送等功能
@@ -87,6 +90,8 @@ public:
 
     UPROPERTY(BlueprintAssignable)
     FOnLanguageChangedButtonUpdatedDelegate OnLanguageChangedButtonUpdated;
+
+    FOnLanguageChangedRegistryNewOptionsDataDelegate  OnRegistryNewOptionsData;
 
 private:
     /** 已创建的主布局控件指针（不参与序列化，运行时临时持有） */

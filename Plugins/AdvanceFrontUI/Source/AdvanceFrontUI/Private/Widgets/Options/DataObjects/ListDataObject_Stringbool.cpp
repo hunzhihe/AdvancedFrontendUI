@@ -30,11 +30,39 @@ void UListDataObject_Stringbool::SetFalseAsDefaultValue()
 	SetDefaultValueFromString(FalseString);
 }
 
+void UListDataObject_Stringbool::SetTrueLocalizationKey(const FString& InKey)
+{
+	TrueLocalizationKey = InKey;
+	// 如果 "true" 选项已在数组中（通过 OverrideTrueDisplayText 提前添加），立即应用键
+	SetOptionLocalizationKey(TrusString, InKey);
+}
+
+void UListDataObject_Stringbool::SetFalseLocalizationKey(const FString& InKey)
+{
+	FalseLocalizationKey = InKey;
+	SetOptionLocalizationKey(FalseString, InKey);
+}
+
 void UListDataObject_Stringbool::OnDataObjectInitialized()
 {
 	TryInitBoolValue();
 
 	Super::OnDataObjectInitialized();
+}
+
+void UListDataObject_Stringbool::RefreshLocalizedText()
+{
+	// 确保本地化键已应用到选项数组（此时 TryInitBoolValue 一定已执行，"true"/"false" 在数组中）
+	if (!TrueLocalizationKey.IsEmpty())
+	{
+		SetOptionLocalizationKey(TrusString, TrueLocalizationKey);
+	}
+	if (!FalseLocalizationKey.IsEmpty())
+	{
+		SetOptionLocalizationKey(FalseString, FalseLocalizationKey);
+	}
+
+	Super::RefreshLocalizedText();
 }
 
 
@@ -52,5 +80,3 @@ void UListDataObject_Stringbool::TryInitBoolValue()
 	}
 
 }
-
-

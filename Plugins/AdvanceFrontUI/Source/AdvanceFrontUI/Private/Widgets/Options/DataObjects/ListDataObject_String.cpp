@@ -3,7 +3,8 @@
 
 #include "Widgets/Options/DataObjects/ListDataObject_String.h"
 #include "Widgets/Options/OptionsDataInteractionHelper.h"
-
+#include "FrontendUIFunctionLibrary.h"
+#include "FrontendSettings/FrontendUIGameUserSettings.h"
 
 void UListDataObject_String::OnDataObjectInitialized()
 {
@@ -31,14 +32,72 @@ void UListDataObject_String::OnDataObjectInitialized()
 	// 根据字符串值查找对应的显示文本
 	if (!TrySetDisplayTextByStringValue(CurrentStringValue))
 	{
-		CurrentDisplayText = FText::FromString("Invalid Options");
+			CurrentDisplayText = FText::FromString("Invalid Options");		
 	};
 }
 
 void UListDataObject_String::AddDynamicOption(const FString& OptionString, const FText& OptionDisplayText)
 {
-	AvaiableOptionsStringArray.Add(OptionString);
-	AvaiableOptionsDisplayTextArray.Add(OptionDisplayText);
+	// FrameRateLimit、ScreenResolution 等系统选项的值不需要本地化，直接使用传入的显示文本
+	if (GetDataID() == "FrameRateLimit" || GetDataID() == "ScreenResolution")
+	{
+		AvaiableOptionsStringArray.Add(OptionString);
+		AvaiableOptionsDisplayTextArray.Add(OptionDisplayText);
+		AvaiableOptionsLocalizationKeyArray.Add(TEXT(""));
+		return;
+	}
+
+
+	if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() == ELaughageChanged::English)
+	{
+		AvaiableOptionsStringArray.Add(OptionString);
+		AvaiableOptionsDisplayTextArray.Add(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::English, OptionString));
+		AvaiableOptionsLocalizationKeyArray.Add(TEXT(""));  // 空键 = 使用 OptionString 作为查表键
+	}
+	else if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() == ELaughageChanged::ZH_Ch)
+	{
+		AvaiableOptionsStringArray.Add(OptionString);
+		AvaiableOptionsDisplayTextArray.Add(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, OptionString));
+		AvaiableOptionsLocalizationKeyArray.Add(TEXT(""));
+	}
+
+}
+
+void UListDataObject_String::RefreshLocalizedText()
+{
+	// 先调用基类刷新描述文本
+	Super::RefreshLocalizedText();
+
+	// FrameRateLimit 的系统选项值不需要本地化
+	if (GetDataID() == FName("FrameRateLimit"))
+	{
+		return;
+	}
+
+	// 清空并重新填充显示文本数组（用当前语言从 StringTable 查表）
+	const ELaughageChanged CurrentLanguage = UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage();
+	AvaiableOptionsDisplayTextArray.Empty();
+
+	// 确保本地化键数组与选项数组大小一致
+	if (AvaiableOptionsLocalizationKeyArray.Num() != AvaiableOptionsStringArray.Num())
+	{
+		AvaiableOptionsLocalizationKeyArray.SetNum(AvaiableOptionsStringArray.Num());
+	}
+
+	for (int32 i = 0; i < AvaiableOptionsStringArray.Num(); ++i)
+	{
+		// 优先使用自定义本地化键，为空时回退到 OptionString
+		const FString& LookupKey = AvaiableOptionsLocalizationKeyArray.IsValidIndex(i) && !AvaiableOptionsLocalizationKeyArray[i].IsEmpty()
+			? AvaiableOptionsLocalizationKeyArray[i]
+			: AvaiableOptionsStringArray[i];
+
+		AvaiableOptionsDisplayTextArray.Add(
+			UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(CurrentLanguage, LookupKey)
+		);
+	}
+
+	// 刷新当前选中值的显示文本
+	TrySetDisplayTextByStringValue(CurrentStringValue);
 }
 
 void UListDataObject_String::AdvanceToNextOption()
@@ -178,11 +237,30 @@ bool UListDataObject_String::TrySetDisplayTextByStringValue(const FString& InStr
 
 
 
+void UListDataObject_String::SetOptionLocalizationKey(const FString& OptionString, const FString& InKey)
+{
+	const int32 Index = AvaiableOptionsStringArray.IndexOfByKey(OptionString);
+	if (Index != INDEX_NONE)
+	{
+		// 确保数组大小一致
+		if (AvaiableOptionsLocalizationKeyArray.Num() != AvaiableOptionsStringArray.Num())
+		{
+			AvaiableOptionsLocalizationKeyArray.SetNum(AvaiableOptionsStringArray.Num());
+		}
+		AvaiableOptionsLocalizationKeyArray[Index] = InKey;
+	}
+}
+
 //******** UListDataObject_StringInteger ********//
 void UListDataObject_StringInteger::AddIntegerOption(int32 InIntegerValue, const FText& InDispalyText)
 {
 	AddDynamicOption(LexToString(InIntegerValue), InDispalyText);
 
+}
+
+void UListDataObject_StringInteger::SetLocalizationKeyForIntegerValue(int32 InIntegerValue, const FString& InKey)
+{
+	SetOptionLocalizationKey(LexToString(InIntegerValue), InKey);
 }
 
 void UListDataObject_StringInteger::OnDataObjectInitialized()

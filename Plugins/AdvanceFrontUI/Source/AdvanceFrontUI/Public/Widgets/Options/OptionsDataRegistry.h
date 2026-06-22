@@ -15,12 +15,18 @@ class UListDataObject_Base;
  * 提供按选项卡 ID 查询列表源数据的能力。
  * 支持树形数据结构，可递归查找子级列表数据。
  */
+
+
+
+
+
 UCLASS()
 class ADVANCEFRONTUI_API UOptionsDataRegistry : public UObject
 {
 	GENERATED_BODY()
 
 public:
+
 
 	/** 初始化所有选项选项卡集合 */
 	void InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPlayer);
@@ -31,10 +37,19 @@ public:
 	/** 根据选中的选项卡 ID 获取该选项卡下的所有列表项（递归展开子级） */
 	TArray<UListDataObject_Base*> GetListSourceItemsBySelectedTabID(const FName& InSelectedTabID) const;
 
+	/** 刷新所有数据对象的本地化文本（语言切换时调用，原地更新不重建对象） */
+	void RefreshAllLocalizedText();
+
+	//void NewLaughageTableRegistry(ULocalPlayer* InOwningLocalPlayer);
+
+
 private:
 
 	/** 递归查找子级列表数据 */
 	void FindChildListDataRecursively(UListDataObject_Base* InParantData, TArray<UListDataObject_Base*>& OutFoundChildListData) const;
+
+	/** 递归刷新子级列表数据的本地化文本 */
+	void RefreshChildListDataRecursively(UListDataObject_Base* InParantData);
 
 	/** 初始化 Gameplay 选项卡的数据集合 */
 	void InitGameplayCollectionTab();

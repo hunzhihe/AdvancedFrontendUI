@@ -24,6 +24,7 @@ public:
 protected:
 	//Begin UListDataObject_String interface
 	virtual void OnDataObjectInitialized() override;
+	virtual void RefreshLocalizedText() override;
 	//Begin UListDataObject_String interface
 
 private:

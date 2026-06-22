@@ -3,6 +3,7 @@
 
 #include "Widgets/Options/ListDataObject_Base.h"
 #include "FrontendSettings/FrontendUIGameUserSettings.h"
+#include "FrontendUIFunctionLibrary.h"
 
 void UListDataObject_Base::InitDataObject()
 {
@@ -72,6 +73,23 @@ bool UListDataObject_Base::IsDataCurrentlyEditable()
 
 void UListDataObject_Base::OnDataObjectInitialized()
 {
+}
+
+void UListDataObject_Base::RefreshLocalizedText()
+{
+	const ELaughageChanged CurrentLanguage = UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage();
+
+	// 如果设置了描述文本本地化键，从 StringTable 重新查表刷新
+	if (!DescriptionLocalizationKey.IsEmpty())
+	{
+		SetDescriptionRichText(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(CurrentLanguage, DescriptionLocalizationKey));
+	}
+
+	// 如果设置了显示名称本地化键，从 StringTable 重新查表刷新
+	if (!DisplayNameLocalizationKey.IsEmpty())
+	{
+		SetDataDisplayName(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(CurrentLanguage, DisplayNameLocalizationKey));
+	}
 }
 
 void UListDataObject_Base::NotifyListDataModified(UListDataObject_Base* InModifiedListDataObject, EOptionsLsitDataModifyReason ModifyReason)

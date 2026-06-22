@@ -36,16 +36,21 @@ void UOptionsDataRegistry::InitOptionsDataRegistry(ULocalPlayer* InOwningLocalPl
 	InitVideoCollectionYab();
 	InitControlCollectionTab(InOwningLocalPlayer);
 
-	// 获取 World（通过 LocalPlayer 的 ViewportClient）
-	UWorld* World = InOwningLocalPlayer->GetWorld();
-	if (World)
-	{
-		CachedWorld = World;
-	}
+	// 初始化完成后统一刷新所有本地化文本（显示名称、描述等）
+	RefreshAllLocalizedText();
 
-	//if (UFrontendUISubsystem::Get(CachedWorld->GetWorld()))
+	// 获取 World（通过 LocalPlayer 的 ViewportClient）
+	//UWorld* World = InOwningLocalPlayer->GetWorld();
+	//if (World)
+	//{
+	//	CachedWorld = World;
+	//}
+
+	//if (UFrontendUISubsystem* UISubsystem = UFrontendUISubsystem::Get(CachedWorld->GetWorld()))
 	//{
 	//	FrontendUIDebugHelper::Log(TEXT("FrontendUISubsystem is ready"));
+
+	//	UISubsystem->OnRegistryNewOptionsData.BindUObject(this, &ThisClass::NewLaughageTableRegistry);
 	//};
 
 
@@ -83,6 +88,56 @@ TArray<UListDataObject_Base*> UOptionsDataRegistry::GetListSourceItemsBySelected
 	
 }
 
+//void UOptionsDataRegistry::NewLaughageTableRegistry(ULocalPlayer* InOwningLocalPlayer)
+//{
+//	InitGameplayCollectionTab();
+//	InitAudioCollectionTab();
+//	InitVideoCollectionYab();
+//	InitControlCollectionTab(InOwningLocalPlayer);
+//}
+
+void UOptionsDataRegistry::RefreshAllLocalizedText()
+{
+	for (UListDataObject_Collection* TabCollection : RegisteredOptionsTabCollections)
+	{
+		if (!TabCollection)
+		{
+			continue;
+		}
+
+		// 刷新选项卡集合自身的本地化文本
+		TabCollection->RefreshLocalizedText();
+
+		// 递归刷新所有子级
+		RefreshChildListDataRecursively(TabCollection);
+	}
+}
+
+void UOptionsDataRegistry::RefreshChildListDataRecursively(UListDataObject_Base* InParantData)
+{
+	if (!InParantData || !InParantData->HasAnyChildListData())
+	{
+		return;
+	}
+
+	for (UListDataObject_Base* ChildData : InParantData->GetAllChildListData())
+	{
+		if (!ChildData)
+		{
+			continue;
+		}
+
+		// 刷新该数据对象的本地化文本
+		ChildData->RefreshLocalizedText();
+
+		// 递归处理其子级
+		if (ChildData->HasAnyChildListData())
+		{
+			RefreshChildListDataRecursively(ChildData);
+		}
+	}
+}
+
 void UOptionsDataRegistry::FindChildListDataRecursively(UListDataObject_Base* InParantData, TArray<UListDataObject_Base*>& OutFoundChildListData) const
 {
 	if (!InParantData || !InParantData->HasAnyChildListData())
@@ -109,7 +164,7 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 {
 	UListDataObject_Collection* GameplayTabCollection = NewObject<UListDataObject_Collection>();
 	GameplayTabCollection->SetDataID(FName("GameplayTabCollection"));
-	GameplayTabCollection->SetDataDisplayName(FText::FromString(TEXT("Gameplay")));
+	GameplayTabCollection->SetDisplayNameLocalizationKey(TEXT("DN_Gameplay"));
 
 	
 	//TSharedPtr<FOptionsDataInteractionHelper> ConstructedHelper =
@@ -121,17 +176,11 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 	{
 		UListDataObject_String* GameDifficultyOption = NewObject<UListDataObject_String>();
 		GameDifficultyOption->SetDataID(FName("GameDifficultyOption"));
-		GameDifficultyOption->SetDataDisplayName(FText::FromString(TEXT("Game Difficulty")));
-		
-		//语言切换功能简单测试（项目初始化时）
-		if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() ==ELaughageChanged::English)
-		{
-			GameDifficultyOption->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the difficulty of the game experience.\n\n<Bold>Easy:</> Focuses on the story experience. Provides the most relaxing combat.\n\n<Bold>Normal:</> Offers slightly harder combat experience\n\n<Bold>Hard:</> Offers a much more challenging combat experience\n\n<Bold>Vert Hard:</> Provides the most challenging combat experience. Not recommended for first play through.")));
-		}
-		else if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() == ELaughageChanged::ZH_Ch)
-		{
-			GameDifficultyOption->SetDescriptionRichText(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, "WindowModeDescKey"));
-		}
+		GameDifficultyOption->SetDisplayNameLocalizationKey(TEXT("DN_GameDifficulty"));
+
+		//描述文本通过本地化键在语言切换时自动刷新
+		GameDifficultyOption->SetDescriptionLocalizationKey(TEXT("GameDifficulty"));
+		// RefreshLocalizedText 由 InitOptionsDataRegistry 末尾统一调用
 		//GameDifficultyOption->SetDescriptionRichText(FText::FromString(TEXT("Adjusts the difficulty of the game experience.\n\n<Bold>Easy:</> Focuses on the story experience. Provides the most relaxing combat.\n\n<Bold>Normal:</> Offers slightly harder combat experience\n\n<Bold>Hard:</> Offers a much more challenging combat experience\n\n<Bold>Vert Hard:</> Provides the most challenging combat experience. Not recommended for first play through.")));
 		//GameDifficultyOption->SetDescriptionRichText(UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, "WindowModeDescKey"));
 
@@ -153,7 +202,7 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 	{
 		UListDataObject_String* TestItemOption = NewObject<UListDataObject_String>();
 		TestItemOption->SetDataID(FName("TestItemOption"));
-		TestItemOption->SetDataDisplayName(FText::FromString(TEXT("Test Image Item")));
+		TestItemOption->SetDisplayNameLocalizationKey(TEXT("DN_TestImageItem"));
 		TestItemOption->SetSoftDiscriptionImage(UFrontendUIFunctionLibrary::GetOptionsSoftImage(FrontendGameplayTags::Frontend_Image_TestIamge));
 		TestItemOption->SetDescriptionRichText(FText::FromString(TEXT("The Image to display can be specified in the settings,it can be anything the Developer assigned in there")));
 
@@ -165,12 +214,24 @@ void UOptionsDataRegistry::InitGameplayCollectionTab()
 	{
 		//const FText WindowModeDesc =  LOCTABLE("/Game/Blueprints/UI/StringTable/ST_OptionsScreenDescription.ST_OptionsScreenDescription","WindowModeDescKey");
 
-		UListDataObject_StringEnum* Language = NewObject<UListDataObject_StringEnum>();
+		UListDataObject_String* Language = NewObject<UListDataObject_String>();
 		Language->SetDataID(FName("Language"));
-		Language->SetDataDisplayName(FText::FromString(TEXT("Language")));
+		Language->SetDisplayNameLocalizationKey(TEXT("DN_Language"));
+
+		//if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() == ELaughageChanged::English)
+		//{
+		//	Language->AddDynamicOption(TEXT("English"), UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::English, "English"));
+		//	Language->AddDynamicOption(TEXT("ZH_Ch"), UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::English, "ZH_Ch"));
+
+		//}
+		//else if (UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->GetCurrentLanguage() == ELaughageChanged::ZH_Ch)
+		//{
+		//	Language->AddDynamicOption(TEXT("English"), UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, "English"));
+		//	Language->AddDynamicOption(TEXT("ZH_Ch"), UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::ZH_Ch, "ZH_Ch"));
+		//}
 		//Language->SetDescriptionRichText(GET_DESCRIPTION("LanguageDescKey"));
-		Language->AddEnumOptions(ELaughageChanged::English, FText::FromString(TEXT("English")));
-		Language->AddEnumOptions(ELaughageChanged::ZH_Ch, FText::FromString(TEXT("ZH_Ch")));
+		Language->AddDynamicOption(TEXT("English"), UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::English, "English"));
+		Language->AddDynamicOption(TEXT("ZH_Ch"), UFrontendUIFunctionLibrary::GetCurrentLanguageTextFromTable(ELaughageChanged::English, "ZH_Ch"));
 		Language->SetDefaultValueFromString(TEXT("English"));
 		Language->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentLanguage));
 		Language->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentLanguage));
@@ -191,13 +252,13 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 
 	UListDataObject_Collection* AudioTabCollection = NewObject<UListDataObject_Collection>();
 	AudioTabCollection->SetDataID(FName("AudioTabCollection"));
-	AudioTabCollection->SetDataDisplayName(FText::FromString(TEXT("Audio")));
+	AudioTabCollection->SetDisplayNameLocalizationKey(TEXT("DN_Audio"));
 
 	//Volume Category
 	{
 		UListDataObject_Collection* VolumeCategoryCollection = NewObject<UListDataObject_Collection>();
 		VolumeCategoryCollection->SetDataID(FName("VolumeCategoryCollection"));
-		VolumeCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Volume")));
+		VolumeCategoryCollection->SetDisplayNameLocalizationKey(TEXT("DN_Volume"));
 
 
 		AudioTabCollection->AddChildListData(VolumeCategoryCollection);
@@ -207,7 +268,7 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		{
 			UListDataObject_Scalar* OverallVolum = NewObject<UListDataObject_Scalar>();
 			OverallVolum->SetDataID(FName("OverallVolum"));
-			OverallVolum->SetDataDisplayName(FText::FromString(TEXT("Overall Volum")));
+			OverallVolum->SetDisplayNameLocalizationKey(TEXT("DN_OverallVolum"));
 			OverallVolum->SetDescriptionRichText(FText::FromString(TEXT("This is description for Overall Volum")));
 			OverallVolum->SetDisplayValueRange(TRange<float>(0.f, 1.f));
 			OverallVolum->SetOutputValueRange(TRange<float>(0.f, 10.f));
@@ -231,7 +292,7 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		{
 			UListDataObject_Scalar* MusicVolume = NewObject<UListDataObject_Scalar>();
 			MusicVolume->SetDataID(FName("MusicVolume"));
-			MusicVolume->SetDataDisplayName(FText::FromString(TEXT("Music Volume")));
+			MusicVolume->SetDisplayNameLocalizationKey(TEXT("DN_MusicVolume"));
 			MusicVolume->SetDescriptionRichText(FText::FromString(TEXT("This is description for Music Volume")));
 			MusicVolume->SetDisplayValueRange(TRange<float>(0.f, 1.f));
 			MusicVolume->SetOutputValueRange(TRange<float>(0.f, 10.f));
@@ -255,7 +316,7 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		{
 			UListDataObject_Scalar* SoundFXVolume = NewObject<UListDataObject_Scalar>();
 			SoundFXVolume->SetDataID(FName("SoundFXVolume"));
-			SoundFXVolume->SetDataDisplayName(FText::FromString(TEXT("Sound FX Volume")));
+			SoundFXVolume->SetDisplayNameLocalizationKey(TEXT("DN_SoundFXVolume"));
 			SoundFXVolume->SetDescriptionRichText(FText::FromString(TEXT("This is description for Sound FX Volume")));
 			SoundFXVolume->SetDisplayValueRange(TRange<float>(0.f, 1.f));
 			SoundFXVolume->SetOutputValueRange(TRange<float>(0.f, 10.f));
@@ -288,7 +349,7 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 	{
 		UListDataObject_Collection* SoundCategoryCollection = NewObject<UListDataObject_Collection>();
 		SoundCategoryCollection->SetDataID(FName("SoundCategoryCollection"));
-		SoundCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Sound")));
+		SoundCategoryCollection->SetDisplayNameLocalizationKey(TEXT("DN_Sound"));
 		
 		AudioTabCollection->AddChildListData(SoundCategoryCollection);
 
@@ -296,9 +357,11 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		{
 			UListDataObject_Stringbool* AllowBackgroundAudio =  NewObject<UListDataObject_Stringbool>();
 			AllowBackgroundAudio->SetDataID(FName("AllowBackgroundAudio"));
-			AllowBackgroundAudio->SetDataDisplayName(FText::FromString(TEXT("Allow Background Audio")));
+			AllowBackgroundAudio->SetDisplayNameLocalizationKey(TEXT("DN_AllowBackgroundAudio"));
 			AllowBackgroundAudio->OverrideTrueDisplayText(FText::FromString(TEXT("Enable")));
 			AllowBackgroundAudio->OverrideFalseDisplayText(FText::FromString(TEXT("Disabled")));
+			AllowBackgroundAudio->SetTrueLocalizationKey(TEXT("DN_Enable"));
+			AllowBackgroundAudio->SetFalseLocalizationKey(TEXT("DN_Disabled"));
 			AllowBackgroundAudio->SetFalseAsDefaultValue();
 			AllowBackgroundAudio->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentAllowBackgroundAudio));
 			AllowBackgroundAudio->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentAllowBackgroundAudio));
@@ -311,9 +374,11 @@ void UOptionsDataRegistry::InitAudioCollectionTab()
 		{
 			UListDataObject_Stringbool* UserHDRAudio = NewObject<UListDataObject_Stringbool>();
 			UserHDRAudio->SetDataID(FName("UserHDRAudio"));
-			UserHDRAudio->SetDataDisplayName(FText::FromString(TEXT("User HDR Audio")));
+			UserHDRAudio->SetDisplayNameLocalizationKey(TEXT("DN_UserHDRAudio"));
 			UserHDRAudio->OverrideTrueDisplayText(FText::FromString(TEXT("Enable")));
 			UserHDRAudio->OverrideFalseDisplayText(FText::FromString(TEXT("Disabled")));
+			UserHDRAudio->SetTrueLocalizationKey(TEXT("DN_Enable"));
+			UserHDRAudio->SetFalseLocalizationKey(TEXT("DN_Disabled"));
 			UserHDRAudio->SetFalseAsDefaultValue();
 			UserHDRAudio->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetCurrentUserHDRAudio));
 			UserHDRAudio->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetCurrentUserHDRAudio));
@@ -334,7 +399,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 {
 	UListDataObject_Collection* VideoTabCollection = NewObject<UListDataObject_Collection>();
 	VideoTabCollection->SetDataID(FName("VideoTabCollection"));
-	VideoTabCollection->SetDataDisplayName(FText::FromString(TEXT("Video")));
+	VideoTabCollection->SetDisplayNameLocalizationKey(TEXT("DN_Video"));
 
 
 	UListDataObject_StringEnum* CreatedWindowMode = nullptr;
@@ -343,7 +408,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 	{
 		UListDataObject_Collection* DisplayCategoryCollection = NewObject<UListDataObject_Collection>();
 		DisplayCategoryCollection->SetDataID(FName("DisplayCategoryCollection"));
-		DisplayCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Display")));
+		DisplayCategoryCollection->SetDisplayNameLocalizationKey(TEXT("DN_Display"));
 
 		VideoTabCollection->AddChildListData(DisplayCategoryCollection);
 
@@ -364,7 +429,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			
 			UListDataObject_StringEnum* WindowMode = NewObject<UListDataObject_StringEnum>();
 			WindowMode->SetDataID(FName("WindowMode"));
-			WindowMode->SetDataDisplayName(FText::FromString(TEXT("Window Mode")));
+			WindowMode->SetDisplayNameLocalizationKey(TEXT("DN_WindowMode"));
 			WindowMode->SetDescriptionRichText(GET_DESCRIPTION("WindowModeDescKey"));
 			WindowMode->AddEnumOptions(EWindowMode::Fullscreen, FText::FromString(TEXT("FullScreen Mode")));
 			WindowMode->AddEnumOptions(EWindowMode::WindowedFullscreen, FText::FromString(TEXT("Borderless Window")));
@@ -386,7 +451,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText ScreenResolutionDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "ScreenResolutionsDescKey");
 			UListDataObject_StringResolution* ScreenResolution = NewObject<UListDataObject_StringResolution>();
 			ScreenResolution->SetDataID(FName("ScreenResolution"));
-			ScreenResolution->SetDataDisplayName(FText::FromString(TEXT("Screen Resolution")));
+			ScreenResolution->SetDisplayNameLocalizationKey(TEXT("DN_ScreenResolution"));
 			ScreenResolution->SetDescriptionRichText(GET_DESCRIPTION("ScreenResolutionsDescKey"));
 			ScreenResolution->InitResolutionValues();
 			ScreenResolution->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetScreenResolution));
@@ -428,7 +493,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 	{
 		UListDataObject_Collection* GraphicsCategoryCollection = NewObject<UListDataObject_Collection>();
 		GraphicsCategoryCollection->SetDataID(FName("GraphicsCategoryCollection"));
-		GraphicsCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Graphics")));
+		GraphicsCategoryCollection->SetDisplayNameLocalizationKey(TEXT("DN_Graphics"));
 
 		VideoTabCollection->AddChildListData(GraphicsCategoryCollection);
 
@@ -437,7 +502,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText DisplayGammaDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "DisplayGammaDescKey");
 			UListDataObject_Scalar* DisplayGamma = NewObject<UListDataObject_Scalar>();
 			DisplayGamma->SetDataID(FName("DisplayGamma"));
-			DisplayGamma->SetDataDisplayName(FText::FromString(TEXT("Brightness")));
+			DisplayGamma->SetDisplayNameLocalizationKey(TEXT("DN_Brightness"));
 			DisplayGamma->SetDescriptionRichText(GET_DESCRIPTION("DisplayGammaDescKey"));
 			DisplayGamma->SetDisplayValueRange(TRange<float>(0.f, 1.f));
 			DisplayGamma->SetOutputValueRange(TRange<float>(1.7f, 2.7f));
@@ -455,12 +520,22 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 
 		UListDataObject_StringInteger* CreatedOverallQuality = nullptr;
 
+		// 为所有图形质量选项设置统一的本地化键（Low/Normal/High/Epic/Cinematic）
+		auto SetQualityLocalizationKeys = [](UListDataObject_StringInteger* QualityOption)
+		{
+			QualityOption->SetLocalizationKeyForIntegerValue(0, TEXT("DN_Quality_Low"));
+			QualityOption->SetLocalizationKeyForIntegerValue(1, TEXT("DN_Quality_Normal"));
+			QualityOption->SetLocalizationKeyForIntegerValue(2, TEXT("DN_Quality_High"));
+			QualityOption->SetLocalizationKeyForIntegerValue(3, TEXT("DN_Quality_Epic"));
+			QualityOption->SetLocalizationKeyForIntegerValue(4, TEXT("DN_Quality_Cinematic"));
+		};
+
 		//Overall Quality
 		{
 			//const FText OverallQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "OverallQualityDescKey");
 			UListDataObject_StringInteger* OverallQuality =  NewObject<UListDataObject_StringInteger>();
 			OverallQuality->SetDataID(FName("OverallQuality"));
-			OverallQuality->SetDataDisplayName(FText::FromString(TEXT("Overall Quality")));
+			OverallQuality->SetDisplayNameLocalizationKey(TEXT("DN_OverallQuality"));
 			OverallQuality->SetDescriptionRichText(GET_DESCRIPTION("OverallQualityDescKey"));
 			OverallQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			OverallQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -470,7 +545,8 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			OverallQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetOverallScalabilityLevel));
 			OverallQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetOverallScalabilityLevel));
 			OverallQuality->SetShouldApplySettingsImmediately(true);
-			
+
+			SetQualityLocalizationKeys(OverallQuality);
 
 			GraphicsCategoryCollection->AddChildListData(OverallQuality);
 
@@ -482,7 +558,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText ResolutionScaleDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "ResolutionScaleDescKey");
 			UListDataObject_Scalar* ResolutionScale = NewObject<UListDataObject_Scalar>();
 			ResolutionScale->SetDataID(FName("ResolutionScale"));
-			ResolutionScale->SetDataDisplayName(FText::FromString(TEXT("3D Resolution")));
+			ResolutionScale->SetDisplayNameLocalizationKey(TEXT("DN_3DResolution"));
 			ResolutionScale->SetDescriptionRichText(GET_DESCRIPTION("ResolutionScaleDescKey"));
 			ResolutionScale->SetDisplayValueRange(TRange<float>(0.f, 1.f));
 			ResolutionScale->SetOutputValueRange(TRange<float>(0.f, 1.f));
@@ -504,7 +580,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText GlobalIlluminationQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "GlobalIlluminationQualityDescKey");
 			UListDataObject_StringInteger* GlobalIlluminationQuality = NewObject<UListDataObject_StringInteger>();
 			GlobalIlluminationQuality->SetDataID(FName("GlobalIlluminationQuality"));
-			GlobalIlluminationQuality->SetDataDisplayName(FText::FromString(TEXT("Global Illumination")));
+			GlobalIlluminationQuality->SetDisplayNameLocalizationKey(TEXT("DN_GlobalIllumination"));
 			GlobalIlluminationQuality->SetDescriptionRichText(GET_DESCRIPTION("GlobalIlluminationQualityDescKey"));
 			GlobalIlluminationQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			GlobalIlluminationQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -514,6 +590,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			GlobalIlluminationQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetGlobalIlluminationQuality));
 			GlobalIlluminationQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetGlobalIlluminationQuality));
 			GlobalIlluminationQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(GlobalIlluminationQuality);
 
 			GlobalIlluminationQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -530,7 +607,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText ShadowQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "ShadowQualityDescKey");
 			UListDataObject_StringInteger* ShadowQuality = NewObject<UListDataObject_StringInteger>();
 			ShadowQuality->SetDataID(FName("ShadowQuality"));
-			ShadowQuality->SetDataDisplayName(FText::FromString(TEXT("Shadow Quality")));
+			ShadowQuality->SetDisplayNameLocalizationKey(TEXT("DN_ShadowQuality"));
 			ShadowQuality->SetDescriptionRichText(GET_DESCRIPTION("ShadowQualityDescKey"));
 			ShadowQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			ShadowQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -540,6 +617,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			ShadowQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetShadowQuality));
 			ShadowQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetShadowQuality));
 			ShadowQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(ShadowQuality);
 
 			ShadowQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -554,7 +632,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText AntiAliasingDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "AntiAliasingDescKey");
 			UListDataObject_StringInteger* AntiAliasingQuality = NewObject<UListDataObject_StringInteger>();
 			AntiAliasingQuality->SetDataID(FName("AntiAliasingQuality"));
-			AntiAliasingQuality->SetDataDisplayName(FText::FromString(TEXT("Anti Aliasing")));
+			AntiAliasingQuality->SetDisplayNameLocalizationKey(TEXT("DN_AntiAliasing"));
 			AntiAliasingQuality->SetDescriptionRichText(GET_DESCRIPTION("AntiAliasingDescKey"));
 			AntiAliasingQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			AntiAliasingQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -564,6 +642,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			AntiAliasingQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetAntiAliasingQuality));
 			AntiAliasingQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetAntiAliasingQuality));
 			AntiAliasingQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(AntiAliasingQuality);
 
 			AntiAliasingQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -578,7 +657,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText ViewDistanceDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "ViewDistanceDescKey");
 			UListDataObject_StringInteger* ViewDistanceQuality = NewObject<UListDataObject_StringInteger>();
 			ViewDistanceQuality->SetDataID(FName("ViewDistanceQuality"));
-			ViewDistanceQuality->SetDataDisplayName(FText::FromString(TEXT("View Distance")));
+			ViewDistanceQuality->SetDisplayNameLocalizationKey(TEXT("DN_ViewDistance"));
 			ViewDistanceQuality->SetDescriptionRichText(GET_DESCRIPTION("ViewDistanceDescKey"));
 			ViewDistanceQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			ViewDistanceQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -588,6 +667,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			ViewDistanceQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetViewDistanceQuality));
 			ViewDistanceQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetViewDistanceQuality));
 			ViewDistanceQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(ViewDistanceQuality);
 
 			ViewDistanceQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -603,7 +683,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText TextureQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "TextureQualityDescKey");
 			UListDataObject_StringInteger* TextureQuality = NewObject<UListDataObject_StringInteger>();
 			TextureQuality->SetDataID(FName("TextureQuality"));
-			TextureQuality->SetDataDisplayName(FText::FromString(TEXT("Texture Quality")));
+			TextureQuality->SetDisplayNameLocalizationKey(TEXT("DN_TextureQuality"));
 			TextureQuality->SetDescriptionRichText(GET_DESCRIPTION("TextureQualityDescKey"));
 			TextureQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			TextureQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -613,6 +693,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			TextureQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetTextureQuality));
 			TextureQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetTextureQuality));
 			TextureQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(TextureQuality);
 
 			TextureQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -627,7 +708,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText VisualEffectQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "VisualEffectQualityDescKey");
 			UListDataObject_StringInteger* VisualEffectQuality = NewObject<UListDataObject_StringInteger>();
 			VisualEffectQuality->SetDataID(FName("VisualEffectsQuality"));
-			VisualEffectQuality->SetDataDisplayName(FText::FromString(TEXT("Visual Effects")));
+			VisualEffectQuality->SetDisplayNameLocalizationKey(TEXT("DN_VisualEffects"));
 			VisualEffectQuality->SetDescriptionRichText(GET_DESCRIPTION("VisualEffectQualityDescKey"));
 			VisualEffectQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			VisualEffectQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -637,6 +718,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			VisualEffectQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetVisualEffectQuality));
 			VisualEffectQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetVisualEffectQuality));
 			VisualEffectQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(VisualEffectQuality);
 
 			VisualEffectQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -652,7 +734,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText ReflectionQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "ReflectionQualityDescKey");
 			UListDataObject_StringInteger* ReflectionQuality = NewObject<UListDataObject_StringInteger>();
 			ReflectionQuality->SetDataID(FName("ReflectionQuality"));
-			ReflectionQuality->SetDataDisplayName(FText::FromString(TEXT("Reflection Quality")));
+			ReflectionQuality->SetDisplayNameLocalizationKey(TEXT("DN_ReflectionQuality"));
 			ReflectionQuality->SetDescriptionRichText(GET_DESCRIPTION("ReflectionQualityDescKey"));
 			ReflectionQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			ReflectionQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -662,6 +744,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			ReflectionQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetReflectionQuality));
 			ReflectionQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetReflectionQuality));
 			ReflectionQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(ReflectionQuality);
 
 			ReflectionQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -679,7 +762,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText PostProcessingQualityDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "PostProcessingQualityDescKey");
 			UListDataObject_StringInteger* PostProcessingQuality = NewObject<UListDataObject_StringInteger>();
 			PostProcessingQuality->SetDataID(FName("PostProcessingQuality"));
-			PostProcessingQuality->SetDataDisplayName(FText::FromString(TEXT("Post Processing")));
+			PostProcessingQuality->SetDisplayNameLocalizationKey(TEXT("DN_PostProcessing"));
 			PostProcessingQuality->SetDescriptionRichText(GET_DESCRIPTION("PostProcessingQualityDescKey"));
 			PostProcessingQuality->AddIntegerOption(0, FText::FromString(TEXT("Low")));
 			PostProcessingQuality->AddIntegerOption(1, FText::FromString(TEXT("Normal")));
@@ -689,6 +772,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			PostProcessingQuality->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(GetPostProcessingQuality));
 			PostProcessingQuality->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetPostProcessingQuality));
 			PostProcessingQuality->SetShouldApplySettingsImmediately(true);
+			SetQualityLocalizationKeys(PostProcessingQuality);
 
 			PostProcessingQuality->AddEditDependencyData(CreatedOverallQuality);
 
@@ -704,7 +788,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 	{
 		UListDataObject_Collection* AdvancedGraphicsCategoryCollection = NewObject<UListDataObject_Collection>();
 		AdvancedGraphicsCategoryCollection->SetDataID(FName("AdvancedGraphicsCategoryCollection"));
-		AdvancedGraphicsCategoryCollection->SetDataDisplayName(FText::FromString(TEXT("Advanced Graphics")));
+		AdvancedGraphicsCategoryCollection->SetDisplayNameLocalizationKey(TEXT("DN_AdvancedGraphics"));
 
 		VideoTabCollection->AddChildListData(AdvancedGraphicsCategoryCollection);
 
@@ -713,11 +797,13 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText VerticalSyncDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "VerticalSyncDescKey");
 			UListDataObject_Stringbool* VerticalSync = NewObject<UListDataObject_Stringbool>();
 			VerticalSync->SetDataID(FName("VerticalSync"));
-			VerticalSync->SetDataDisplayName(FText::FromString(TEXT("V - Sync")));
+			VerticalSync->SetDisplayNameLocalizationKey(TEXT("DN_VSync"));
 			VerticalSync->SetDescriptionRichText(GET_DESCRIPTION("VerticalSyncDescKey"));
 			VerticalSync->SetDataDynamicGetter(MAKE_OPTIONS_DATA_CONTROL(IsVSyncEnabled));
 			VerticalSync->SetDataDynamicSetter(MAKE_OPTIONS_DATA_CONTROL(SetVSyncEnabled));
 			VerticalSync->SetFalseAsDefaultValue();
+			VerticalSync->SetTrueLocalizationKey(TEXT("DN_ON"));
+			VerticalSync->SetFalseLocalizationKey(TEXT("DN_OFF"));
 			VerticalSync->SetShouldApplySettingsImmediately(true);
 
 			FOptinsDataEditConditionDescriptor FullScreenOnlyCondition;
@@ -747,7 +833,7 @@ void UOptionsDataRegistry::InitVideoCollectionYab()
 			//const FText FrameRateLimitDesc = LOCTABLE(" / Game / Blueprints / UI / StringTable / ST_OptionsScreenDescription.ST_OptionsScreenDescription", "FrameRateLimitDescKey");
 			UListDataObject_String* FrameRateLimit = NewObject<UListDataObject_String>();
 			FrameRateLimit->SetDataID(FName("FrameRateLimit"));
-			FrameRateLimit->SetDataDisplayName(FText::FromString(TEXT("FrameRateLimit")));
+			FrameRateLimit->SetDisplayNameLocalizationKey(TEXT("DN_FrameRateLimit"));
 			//FrameRateLimit->SetDescriptionRichText(GET_DESCRIPTION("FrameRateLimitDescKey"));
 			FrameRateLimit->AddDynamicOption(LexToString(30.f), FText::FromString(TEXT("30 FPS")));
 			FrameRateLimit->AddDynamicOption(LexToString(60.f), FText::FromString(TEXT("60 FPS")));
@@ -773,7 +859,7 @@ void UOptionsDataRegistry::InitControlCollectionTab(ULocalPlayer* InOwningLocalP
 {
 	UListDataObject_Collection* ControlTabCollection = NewObject<UListDataObject_Collection>();
 	ControlTabCollection->SetDataID(FName("ControlTabCollection"));
-	ControlTabCollection->SetDataDisplayName(FText::FromString(TEXT("Control")));
+	ControlTabCollection->SetDisplayNameLocalizationKey(TEXT("DN_Control"));
 
 	UEnhancedInputLocalPlayerSubsystem* EISubsystem = InOwningLocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 
@@ -787,7 +873,7 @@ void UOptionsDataRegistry::InitControlCollectionTab(ULocalPlayer* InOwningLocalP
 	{
 		UListDataObject_Collection* KeyboardMouseCategory = NewObject<UListDataObject_Collection>();
 		KeyboardMouseCategory->SetDataID(FName("KeyboardMouseCategory"));
-		KeyboardMouseCategory->SetDataDisplayName(FText::FromString(TEXT("KeyboardMouse")));
+		KeyboardMouseCategory->SetDisplayNameLocalizationKey(TEXT("DN_KeyboardMouse"));
 
 
 		ControlTabCollection->AddChildListData(KeyboardMouseCategory);
@@ -847,7 +933,7 @@ void UOptionsDataRegistry::InitControlCollectionTab(ULocalPlayer* InOwningLocalP
 	{
 		UListDataObject_Collection* GamePadCategory = NewObject<UListDataObject_Collection>();
 		GamePadCategory->SetDataID(FName("GamePadCategory"));
-		GamePadCategory->SetDataDisplayName(FText::FromString(TEXT("GamePad")));
+		GamePadCategory->SetDisplayNameLocalizationKey(TEXT("DN_GamePad"));
 
 
 		ControlTabCollection->AddChildListData(GamePadCategory);

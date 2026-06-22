@@ -29,12 +29,19 @@ public:
 	/** 当 Rotator 控件触发值变化时调用 */
 	void OnRotatorInitiatedValueChange(const FText& InNewSelectedText);
 
-protected:
+
+	/** 覆盖某个选项的本地化键（用于 StringTable 查表，替代默认的 OptionString） */
+	void SetOptionLocalizationKey(const FString& OptionString, const FString& InKey);
+
+	/** 获取选项本地化键数组 */
+	FORCEINLINE TArray<FString>& GetAvaiableOptionsLocalizationKeyArray() { return AvaiableOptionsLocalizationKeyArray; }
+
 	//Begin UListDataObject_Base interface
 	virtual void OnDataObjectInitialized() override;
 	virtual bool CanResetBackToDefaultValue() const override;
 	virtual bool TryResetBackToDefaultValue()  override;
-
+	virtual void RefreshLocalizedText() override;
+protected:
 	/** 判断是否支持被强制设置为某个字符串值 */
 	virtual bool CanSetToForcedStringvalue(const FString& InForcedValue) const override;
 	/** 当被强制设置值时调用 */
@@ -53,9 +60,12 @@ protected:
 	/** 所有可用选项的显示文本数组 */
 	TArray<FText> AvaiableOptionsDisplayTextArray;
 
+	/** 每个选项对应的本地化键（StringTable 查表键），为空时回退到 OptionString */
+	TArray<FString> AvaiableOptionsLocalizationKeyArray;
+
 public:
 
-	FORCEINLINE const TArray<FText>& GetAvaiableOptionsDisplayTextArray() const { return AvaiableOptionsDisplayTextArray; }
+	FORCEINLINE TArray<FText>& GetAvaiableOptionsDisplayTextArray() { return AvaiableOptionsDisplayTextArray; }
 	FORCEINLINE const FString& GetCurrentStringValue() const { return CurrentStringValue; }
 	FORCEINLINE const FText& GetCurrentDisplayText() const { return CurrentDisplayText; }
 	FORCEINLINE const TArray<FString>& GetAvaiableOptionsStringArray() const { return AvaiableOptionsStringArray; }
@@ -119,6 +129,9 @@ class ADVANCEFRONTUI_API UListDataObject_StringInteger : public UListDataObject_
 public:
 	/** 添加一个整数选项 */
 	void AddIntegerOption(int32 InIntegerValue, const FText& InDispalyText);
+
+	/** 为指定整数值设置本地化键（StringTable 查表键，覆盖默认的整数转字符串） */
+	void SetLocalizationKeyForIntegerValue(int32 InIntegerValue, const FString& InKey);
 
 protected:
 
