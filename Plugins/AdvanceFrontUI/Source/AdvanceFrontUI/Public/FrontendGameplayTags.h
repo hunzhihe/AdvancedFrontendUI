@@ -27,6 +27,7 @@ namespace FrontendGameplayTags
 	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_StoryScreen);
 	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_OptionsScreen);
 	ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_KeyRemapScreen);
+    ADVANCEFRONTUI_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(Frontend_Widget_CreatCharacterScreen);
 
 	// ========== 选项图片标签（Frontend.Image.*）==========
 	// 用于在前端设置中映射标签到具体的图片纹理资产

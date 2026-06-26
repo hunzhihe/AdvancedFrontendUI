@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Widgets/Widget_OptionsScreen.h"
+#include "Widgets/Widget_CreatCharacter.h"
 #include "Input/CommonUIInputTypes.h"
 #include "ICommonInputModule.h"
 #include "FrontendUIDebugHelper.h"
-#include "Widgets/Options/OptionsDataRegistry.h"
+#include "Widgets/Options/CreatCharacterScreenDataRegistry.h"
 #include "Widgets/Options/DataObjects/ListDataObject_Collection.h"
 #include "Widgets/Components/FrontendTabListWidgetBase.h"
 #include "Widgets/Components/FrontendUICommonListView.h"
@@ -14,8 +14,10 @@
 #include "Widgets/Options/Widget_OptionsDetailView.h"
 #include "Subsystem/FrontendUISubsystem.h"
 #include "Widgets/Components/FrontendCommonButtonBase.h"
+#include "Kismet/GameplayStatics.h"
+#include "PlayerSaveData.h"
 
-void UWidget_OptionsScreen::NativeOnInitialized()
+void UWidget_CreatCharacter::NativeOnInitialized()
 {
     Super::NativeOnInitialized();
 
@@ -23,11 +25,11 @@ void UWidget_OptionsScreen::NativeOnInitialized()
     if (!ResetToDefaultAction.IsNull())
     {
         ResetToDefaultActionHandle = RegisterUIActionBinding(
-        FBindUIActionArgs(
-            ResetToDefaultAction,
-            true,
-            FSimpleDelegate::CreateUObject(this, &ThisClass::OnResetBoundActionTriggered))
-       );
+            FBindUIActionArgs(
+                ResetToDefaultAction,
+                true,
+                FSimpleDelegate::CreateUObject(this, &ThisClass::OnResetBoundActionTriggered))
+        );
     }
 
     // 注册"返回"UI 操作绑定（使用 CommonUI 默认返回操作）
@@ -36,12 +38,20 @@ void UWidget_OptionsScreen::NativeOnInitialized()
             ICommonInputModule::GetSettings().GetDefaultBackAction(),
             true,
             FSimpleDelegate::CreateUObject(this, &ThisClass::OnBackBoundActionTriggered))
-       );
+    );
 
-	// 绑定选项卡选择事件
-	TabListWidget_OptionsTabs->OnTabSelected.AddUniqueDynamic(this, &ThisClass::OnOptionsTabSelected);
+    // 注册"确认"UI 操作绑定（使用 CommonUI 默认点击/确认操作）
+    ConfirmCharacterActionHandle = RegisterUIActionBinding(
+        FBindUIActionArgs(
+            ICommonInputModule::GetSettings().GetDefaultClickAction(),
+            true,
+            FSimpleDelegate::CreateUObject(this, &ThisClass::OnConfirmCharacterActionTriggered))
+    );
 
-	// 绑定列表项悬停和选中事件
+    // 绑定选项卡选择事件
+    TabListWidget_OptionsTabs->OnTabSelected.AddUniqueDynamic(this, &ThisClass::OnOptionsTabSelected);
+
+    // 绑定列表项悬停和选中事件
     CommonListView_OptionsList->OnItemIsHoveredChanged().AddUObject(this, &ThisClass::OnListViewItemHovered);
     CommonListView_OptionsList->OnItemSelectionChanged().AddUObject(this, &ThisClass::OnListViewItemSelectionChanged);
 
@@ -49,43 +59,45 @@ void UWidget_OptionsScreen::NativeOnInitialized()
     // 确保每次激活时都重新绑定，防止被其他控件覆盖
 }
 
-
-void UWidget_OptionsScreen::NativeOnActivated()
+void UWidget_CreatCharacter::NativeOnActivated()
 {
-
     Super::NativeOnActivated();
 
     // 每次激活时重新绑定语言更新事件（单播委托会被其他控件覆盖）
     UFrontendUISubsystem::Get(this)->OnRegistryNewOptionsData.BindUObject(this, &ThisClass::RefreshLocalizedDataRegistry);
 
     // 遍历所有选项卡集合并动态注册到 TabListWidget
-    for(UListDataObject_Collection* TabCollection : GetOrCreateDataRegistry()->GetRegisteredOptionsTabCollections())
+    for (UListDataObject_Collection* TabCollection : GetOrCreateDataRegistry()->GetRegisteredOptionsTabCollections())
     {
-       if(!TabCollection)
-       {
-          continue;
-       }
-       const FName TabID = TabCollection->GetDataID();
-       // 避免重复注册
-       if (TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabID)!=nullptr)
-       {
-           continue;
-       }
-       TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
+        if (!TabCollection)
+        {
+            continue;
+        }
+        const FName TabID = TabCollection->GetDataID();
+        // 避免重复注册
+        if (TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabID) != nullptr)
+        {
+            continue;
+        }
+        TabListWidget_OptionsTabs->RequestRegisterTab(TabID, TabCollection->GetDataDisplayName());
     }
-
-
-
 }
-void UWidget_OptionsScreen::NativeOnDeactivated()
+
+void UWidget_CreatCharacter::NativeOnDeactivated()
 {
-	Super::NativeOnDeactivated();
+    Super::NativeOnDeactivated();
 
-	// 停用时保存所有设置
-	UFrontendUIGameUserSettings::GetFrontendUIGameUserSettings()->ApplySettings(true);
-
+    // 停用时将角色数据持久化到磁盘
+    if (CreatedOwningDataRegistry)
+    {
+        if (UPlayerSaveData* SaveData = CreatedOwningDataRegistry->GetPlayerSaveData())
+        {
+            UGameplayStatics::SaveGameToSlot(SaveData, TEXT("PlayerSlot_0"), 0);
+        }
+    }
 }
-UWidget* UWidget_OptionsScreen::NativeGetDesiredFocusTarget() const
+
+UWidget* UWidget_CreatCharacter::NativeGetDesiredFocusTarget() const
 {
     if (UObject* SelectedObject = CommonListView_OptionsList->GetSelectedItem())
     {
@@ -93,44 +105,30 @@ UWidget* UWidget_OptionsScreen::NativeGetDesiredFocusTarget() const
         {
             return SelectedEntryWidget;
         }
-     }
+    }
 
     return Super::NativeGetDesiredFocusTarget();
 }
-UOptionsDataRegistry *UWidget_OptionsScreen::GetOrCreateDataRegistry()
-{
-    if(!CreatedOwningDataRegistry)
-    {
-       CreatedOwningDataRegistry = NewObject<UOptionsDataRegistry>();
-       CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
-    }
 
+UCreatCharacterScreenDataRegistry* UWidget_CreatCharacter::GetOrCreateDataRegistry()
+{
+    if (!CreatedOwningDataRegistry)
+    {
+        CreatedOwningDataRegistry = NewObject<UCreatCharacterScreenDataRegistry>();
+        CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
+    }
 
     return CreatedOwningDataRegistry;
 }
 
-//void UWidget_OptionsScreen::UpdateDataRegistry()
-//{
-//    if (!CreatedOwningDataRegistry)
-//    {
-//        CreatedOwningDataRegistry = NewObject<UOptionsDataRegistry>();
-//        //CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
-//    }
-//    else
-//    {
-//        CreatedOwningDataRegistry->InitOptionsDataRegistry(GetOwningLocalPlayer());
-//    }
-//}
-
-void UWidget_OptionsScreen::RefreshLocalizedDataRegistry()
+void UWidget_CreatCharacter::RefreshLocalizedDataRegistry()
 {
-    // 确保 DataRegistry 已创建
     if (!CreatedOwningDataRegistry)
     {
         return;
     }
 
-    // 刷新所有数据对象的本地化文本（原地更新，不重建对象）
+    // 刷新所有数据对象的本地化文本
     CreatedOwningDataRegistry->RefreshAllLocalizedText();
 
     // 刷新选项卡按钮的显示文本
@@ -149,8 +147,7 @@ void UWidget_OptionsScreen::RefreshLocalizedDataRegistry()
         }
     }
 
-    // 遍历当前列表中所有已创建的条目控件，强制其从数据对象中重新读取本地化文本
-    // 不依赖 SetListItems + RequestRefresh 重建，因为相同对象指针可能被 ListView 优化跳过
+    // 遍历当前列表中所有已创建的条目控件，强制重新读取本地化文本
     const TArray<UObject*>& ListItems = CommonListView_OptionsList->GetListItems();
     for (UObject* Item : ListItems)
     {
@@ -158,7 +155,6 @@ void UWidget_OptionsScreen::RefreshLocalizedDataRegistry()
         {
             if (UWidget_ListEntry_Base* EntryBase = Cast<UWidget_ListEntry_Base>(EntryWidget))
             {
-                // 触发子类重新从数据对象读取显示文本（如 Rotator 标签、选中项文本）
                 EntryBase->OnOwningListDataObjectSet(CastChecked<UListDataObject_Base>(Item));
             }
         }
@@ -171,30 +167,25 @@ void UWidget_OptionsScreen::RefreshLocalizedDataRegistry()
     }
 }
 
-
-void UWidget_OptionsScreen::OnResetBoundActionTriggered()
+void UWidget_CreatCharacter::OnResetBoundActionTriggered()
 {
-    //FrontendUIDebugHelper::Log("Reset to default action triggered.");
-
-	// 无重置项时直接返回
     if (ResettableDataArray.IsEmpty())
     {
         return;
     }
 
-	// 获取当前活动选项卡按钮的显示名称
+    // 获取当前活动选项卡按钮的显示名称
     UCommonButtonBase* SelectedTabButton = TabListWidget_OptionsTabs->GetTabButtonBaseByID(TabListWidget_OptionsTabs->GetActiveTab());
+    FString TabButtonDisplayName = CastChecked<UFrontendCommonButtonBase>(SelectedTabButton)->GetButtonDisplayText().ToString();
 
-    FString TabButtonDisplayName =  CastChecked<UFrontendCommonButtonBase>(SelectedTabButton)->GetButtonDisplayText().ToString();
-
-	// 弹出确认对话框，确认后执行重置
+    // 弹出确认对话框，确认后执行重置
     UFrontendUISubsystem::Get(this)->PushConfirmScreenToModelStackAsync(
         EConfirmScreenType::YesNo,
         FText::FromString(TEXT("Reset")),
-        FText::FromString(TEXT("Are you sure you want to reset all the srtting under the") + TabButtonDisplayName + TEXT("tcb.")),
+        FText::FromString(TEXT("Are you sure you want to reset all character settings under the ") + TabButtonDisplayName + TEXT(" tab.")),
         [this](EConfirmScreenButtonType ClickedButtonType) {
 
-            if (ClickedButtonType != EConfirmScreenButtonType::Confirmed )
+            if (ClickedButtonType != EConfirmScreenButtonType::Confirmed)
             {
                 return;
             }
@@ -211,75 +202,85 @@ void UWidget_OptionsScreen::OnResetBoundActionTriggered()
 
                 if (DataToReset->TryResetBackToDefaultValue())
                 {
-                    //FrontendUIDebugHelper::Log(DataToReset->GetDataDisplayName().ToString() + TEXT("was rest"));
+                    // 重置成功
                 }
                 else
                 {
                     bHasDataFailedToReset = true;
-                    //FrontendUIDebugHelper::Log(DataToReset->GetDataDisplayName().ToString() + TEXT("failed to reset"));
                 }
             }
-
 
             if (!bHasDataFailedToReset)
             {
                 ResettableDataArray.Empty();
-
                 RemoveActionBinding(ResetToDefaultActionHandle);
             }
 
             bIsResettingData = false;
-
         }
-
-
     );
-
 }
-void UWidget_OptionsScreen::OnBackBoundActionTriggered()
+
+void UWidget_CreatCharacter::OnBackBoundActionTriggered()
 {
     DeactivateWidget();
-    //FrontendUIDebugHelper::Log("Back action triggered on options screen.");
 }
 
-void UWidget_OptionsScreen::OnOptionsTabSelected(FName TabID)
+void UWidget_CreatCharacter::OnConfirmCharacterActionTriggered()
 {
-
-	// 切换选项卡时清空详情视图
-    DetailView_ListEntryInfo->ClearDetailView();
-
-    //FrontendUIDebugHelper::Log("Options tab selected: " + TabID.ToString());
-	TArray<UListDataObject_Base*> FoundListSourceItems = 
-        GetOrCreateDataRegistry()->GetListSourceItemsBySelectedTabID(TabID);
-
-	CommonListView_OptionsList->SetListItems(FoundListSourceItems);
-    CommonListView_OptionsList->RequestRefresh();
-
-    if (CommonListView_OptionsList->GetNumItems() !=0)
+    // 数据已通过 SetShouldApplySettingsImmediately 实时写入 CreatedPlayerSaveData
+    // 此处只需将实例持久化到磁盘存档槽
+    if (CreatedOwningDataRegistry)
     {
-        CommonListView_OptionsList->NavigateToIndex(0);
-		CommonListView_OptionsList->SetSelectedIndex(0);
+        if (UPlayerSaveData* SaveData = CreatedOwningDataRegistry->GetPlayerSaveData())
+        {
+            SaveData->CreationTimestamp = FDateTime::Now();
+            UGameplayStatics::SaveGameToSlot(SaveData, TEXT("PlayerSlot_0"), 0);
+        }
     }
 
-	// 重新构建可重置数据列表
+    // 确认成功后停用自身，返回上一级
+    DeactivateWidget();
+}
+
+void UWidget_CreatCharacter::OnOptionsTabSelected(FName TabID)
+{
+    // 切换选项卡时清空详情视图
+    DetailView_ListEntryInfo->ClearDetailView();
+
+    TArray<UListDataObject_Base*> FoundListSourceItems =
+        GetOrCreateDataRegistry()->GetListSourceItemsBySelectedTabID(TabID);
+
+    CommonListView_OptionsList->SetListItems(FoundListSourceItems);
+    CommonListView_OptionsList->RequestRefresh();
+
+    if (CommonListView_OptionsList->GetNumItems() != 0)
+    {
+        CommonListView_OptionsList->NavigateToIndex(0);
+        CommonListView_OptionsList->SetSelectedIndex(0);
+    }
+
+    // 重新构建可重置数据列表
     ResettableDataArray.Empty();
 
     for (UListDataObject_Base* FoundListSourceItem : FoundListSourceItems)
     {
-        if (!FoundListSourceItem) {
+        if (!FoundListSourceItem)
+        {
             continue;
         }
 
-		// 绑定数据修改回调
+        // 绑定数据修改回调
         FoundListSourceItem->OnListDataModified.AddUObject(this,
             &ThisClass::OnListViewListDataModified);
 
-		// 收集所有可重置的数据对象
+        // 收集所有可重置的数据对象
         if (FoundListSourceItem->CanResetBackToDefaultValue())
         {
             ResettableDataArray.AddUnique(FoundListSourceItem);
         }
     }
+
     if (ResettableDataArray.IsEmpty())
     {
         RemoveActionBinding(ResetToDefaultActionHandle);
@@ -293,7 +294,7 @@ void UWidget_OptionsScreen::OnOptionsTabSelected(FName TabID)
     }
 }
 
-void UWidget_OptionsScreen::OnListViewItemHovered(UObject* InHoveredItem, bool bWasHovered)
+void UWidget_CreatCharacter::OnListViewItemHovered(UObject* InHoveredItem, bool bWasHovered)
 {
     if (!InHoveredItem)
     {
@@ -303,7 +304,7 @@ void UWidget_OptionsScreen::OnListViewItemHovered(UObject* InHoveredItem, bool b
 
     check(HoveredEntryWidget);
 
-	HoveredEntryWidget->NativeOnListEntryWidgetHovered(bWasHovered);
+    HoveredEntryWidget->NativeOnListEntryWidgetHovered(bWasHovered);
 
     if (bWasHovered)
     {
@@ -322,11 +323,9 @@ void UWidget_OptionsScreen::OnListViewItemHovered(UObject* InHoveredItem, bool b
             );
         }
     }
-    //测试
-	//FrontendUIDebugHelper::Log("List item " + InHoveredItem->GetName() + (bWasHovered ? " hovered." : " unhovered."));
 }
 
-void UWidget_OptionsScreen::OnListViewItemSelectionChanged(UObject* InSelectedItem)
+void UWidget_CreatCharacter::OnListViewItemSelectionChanged(UObject* InSelectedItem)
 {
     if (!InSelectedItem)
     {
@@ -337,30 +336,29 @@ void UWidget_OptionsScreen::OnListViewItemSelectionChanged(UObject* InSelectedIt
         CastChecked<UListDataObject_Base>(InSelectedItem),
         TryGetEntryWidgetClassName(InSelectedItem)
     );
-    //测试
-	//FrontendUIDebugHelper::Log("List item " + InSelectedItem->GetName() + " selected.");
 }
 
-FString UWidget_OptionsScreen::TryGetEntryWidgetClassName(UObject* InOwningListItem) const
+FString UWidget_CreatCharacter::TryGetEntryWidgetClassName(UObject* InOwningListItem) const
 {
-    if (UUserWidget* FoundEnrtyWidget = CommonListView_OptionsList->GetEntryWidgetFromItem(InOwningListItem))
+    if (UUserWidget* FoundEntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem(InOwningListItem))
     {
-        return FoundEnrtyWidget->GetClass()->GetName();
+        return FoundEntryWidget->GetClass()->GetName();
     }
 
     return TEXT("Entry Widget Not Valid");
 }
 
-void UWidget_OptionsScreen::OnListViewListDataModified(UListDataObject_Base* ModifiedData, EOptionsLsitDataModifyReason ModeifyReason)
+void UWidget_CreatCharacter::OnListViewListDataModified(UListDataObject_Base* ModifiedData, EOptionsLsitDataModifyReason ModifyReason)
 {
-	// 重置过程中忽略修改通知
+    // 重置过程中忽略修改通知
     if (!ModifiedData || bIsResettingData)
     {
         return;
     }
+
     if (ModifiedData->CanResetBackToDefaultValue())
     {
-    	// 数据变为可重置状态时添加到列表并确保操作绑定激活
+        // 数据变为可重置状态时添加到列表并确保操作绑定激活
         ResettableDataArray.AddUnique(ModifiedData);
 
         if (!GetActionBindings().Contains(ResetToDefaultActionHandle))
@@ -370,19 +368,16 @@ void UWidget_OptionsScreen::OnListViewListDataModified(UListDataObject_Base* Mod
     }
     else
     {
-    	// 不可重置时从列表中移除
+        // 不可重置时从列表中移除
         if (ResettableDataArray.Contains(ModifiedData))
         {
             ResettableDataArray.Remove(ModifiedData);
         }
-
     }
+
     // 无重置项时移除操作绑定
     if (ResettableDataArray.IsEmpty())
     {
         RemoveActionBinding(ResetToDefaultActionHandle);
     }
-
 }
-
-
