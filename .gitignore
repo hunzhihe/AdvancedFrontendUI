@@ -9,6 +9,10 @@ Build
 **/Megascans
 **/StarterContent
 **/Assets
+**/ThirdPerson
+**/TopDown
+**/Characters
+**/InteractionManager
 
 .vscode
 .vs

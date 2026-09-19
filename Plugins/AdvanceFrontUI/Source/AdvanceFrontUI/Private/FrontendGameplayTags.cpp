@@ -19,6 +19,7 @@ namespace FrontendGameplayTags
     UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_OptionsScreen, "Frontend.Widget.OptionsScreen");
     UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_KeyRemapScreen, "Frontend.Widget.KeyRemapScreen");
     UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_CreatCharacterScreen, "Frontend.Widget.CreatCharacterScreen");
+    UE_DEFINE_GAMEPLAY_TAG(Frontend_Widget_GameHUD, "Frontend.Widget.GameHUD");
 
     // ========== 图片资产标签定义 ==========
     UE_DEFINE_GAMEPLAY_TAG(Frontend_Image_TestIamge, "Frontend.Image.TestIamge");

@@ -14,6 +14,9 @@ class UFrontendUICommonListView;
 class UWidget_OptionsDetailView;
 class UListDataObject_Base;
 
+/** 角色确认创建成功委托（蓝图中绑定以推送加载界面、进入游戏关卡等） */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnCharacterConfirmedDelegate);
+
 /**
  * 角色创建界面控件
  * 和 UWidget_OptionsScreen 结构类似：选项卡 + 列表视图 + 详情视图三栏布局。
@@ -23,6 +26,11 @@ UCLASS(Abstract, BlueprintType, meta=(DisableNativeTick))
 class ADVANCEFRONTUI_API UWidget_CreatCharacter : public UWidget_ActivatableBase
 {
     GENERATED_BODY()
+
+public:
+    /** 角色确认创建成功时广播（蓝图中绑定此委托以推送加载界面、进入游戏关卡） */
+    UPROPERTY(BlueprintAssignable, Category = "Character Creation")
+    FOnCharacterConfirmedDelegate OnCharacterConfirmed;
 
 protected:
     // Begin UUserWidget Interface
@@ -48,6 +56,8 @@ private:
     void OnBackBoundActionTriggered();
     /** 确认操作触发时的回调（角色创建完成后保存并进入游戏） */
     void OnConfirmCharacterActionTriggered();
+    /** 随机操作触发时的回调（随机分配所有角色基本选项的值） */
+    void OnRandomBoundActionTriggered();
 
     /** 当用户选择某个选项卡时调用 */
     UFUNCTION()
@@ -89,6 +99,13 @@ private:
 
     /** 确认操作的绑定句柄 */
     FUIActionBindingHandle ConfirmCharacterActionHandle;
+
+    /** 随机角色属性的输入操作（DataTable 引用，蓝图中配置） */
+    UPROPERTY(EditDefaultsOnly, Category = "Character Creation", meta = (RowType = "/Script/CommonUI.CommonInputActionDataBase"))
+    FDataTableRowHandle RandomCharacterAction;
+
+    /** 随机操作的绑定句柄 */
+    FUIActionBindingHandle RandomCharacterActionHandle;
 
     // ========== 数据状态 ==========
     /** 当前选项卡中所有可重置的列表数据对象 */

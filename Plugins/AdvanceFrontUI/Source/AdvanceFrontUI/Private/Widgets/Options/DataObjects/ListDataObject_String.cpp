@@ -221,6 +221,25 @@ void UListDataObject_String::OnSetToForcedStringvalue(const FString& InForcedVal
 	}
 }
 
+bool UListDataObject_String::SetCurrentOptionToString(const FString& InStringValue)
+{
+	if (!AvaiableOptionsStringArray.Contains(InStringValue))
+	{
+		return false;
+	}
+
+	CurrentStringValue = InStringValue;
+	TrySetDisplayTextByStringValue(CurrentStringValue);
+
+	if (DataDynamicSetter)
+	{
+		DataDynamicSetter->SetValueFromString(CurrentStringValue);
+		NotifyListDataModified(this);
+	}
+
+	return true;
+}
+
 bool UListDataObject_String::TrySetDisplayTextByStringValue(const FString& InStringValue)
 {
 	const int32 Index = AvaiableOptionsStringArray.IndexOfByKey(InStringValue);

@@ -29,6 +29,10 @@ public:
 	/** 当 Rotator 控件触发值变化时调用 */
 	void OnRotatorInitiatedValueChange(const FText& InNewSelectedText);
 
+	/** 将当前选中值设置为指定的字符串选项（随机角色属性等功能使用）。
+	 *  @return 如果指定的字符串存在于可用选项中则返回 true，否则 false */
+	bool SetCurrentOptionToString(const FString& InStringValue);
+
 
 	/** 覆盖某个选项的本地化键（用于 StringTable 查表，替代默认的 OptionString） */
 	void SetOptionLocalizationKey(const FString& OptionString, const FString& InKey);

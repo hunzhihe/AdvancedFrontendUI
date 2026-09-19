@@ -188,7 +188,7 @@ void UCreatCharacterScreenDataRegistry::InitGameCharacterCollectionTab()
         Race->AddDynamicOption(TEXT("Elf"), FText::FromString(TEXT("Elf")));
         Race->AddDynamicOption(TEXT("Dwarf"), FText::FromString(TEXT("Dwarf")));
         Race->AddDynamicOption(TEXT("Orc"), FText::FromString(TEXT("Orc")));
-        Race->AddDynamicOption(TEXT("Beastkin"), FText::FromString(TEXT("Beastkin")));
+        //Race->AddDynamicOption(TEXT("Beastkin"), FText::FromString(TEXT("Beastkin")));
         Race->SetDefaultValueFromString(TEXT("Human"));
 
         Race->SetDataDynamicGetter(MakeControl(GET_FUNCTION_NAME_STRING_CHECKED(UPlayerSaveData, GetCurrentRace)));

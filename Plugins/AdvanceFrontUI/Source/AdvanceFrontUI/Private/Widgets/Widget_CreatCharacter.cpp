@@ -16,6 +16,7 @@
 #include "Widgets/Components/FrontendCommonButtonBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "PlayerSaveData.h"
+#include "Widgets/Options/DataObjects/ListDataObject_String.h"
 
 void UWidget_CreatCharacter::NativeOnInitialized()
 {
@@ -47,6 +48,17 @@ void UWidget_CreatCharacter::NativeOnInitialized()
             true,
             FSimpleDelegate::CreateUObject(this, &ThisClass::OnConfirmCharacterActionTriggered))
     );
+
+    // 注册"随机"UI 操作绑定（随机分配所有角色选项的值）
+    if (!RandomCharacterAction.IsNull())
+    {
+        RandomCharacterActionHandle = RegisterUIActionBinding(
+            FBindUIActionArgs(
+                RandomCharacterAction,
+                true,
+                FSimpleDelegate::CreateUObject(this, &ThisClass::OnRandomBoundActionTriggered))
+        );
+    }
 
     // 绑定选项卡选择事件
     TabListWidget_OptionsTabs->OnTabSelected.AddUniqueDynamic(this, &ThisClass::OnOptionsTabSelected);
@@ -229,7 +241,7 @@ void UWidget_CreatCharacter::OnBackBoundActionTriggered()
 void UWidget_CreatCharacter::OnConfirmCharacterActionTriggered()
 {
     // 数据已通过 SetShouldApplySettingsImmediately 实时写入 CreatedPlayerSaveData
-    // 此处只需将实例持久化到磁盘存档槽
+    // 此处将实例持久化到磁盘存档槽
     if (CreatedOwningDataRegistry)
     {
         if (UPlayerSaveData* SaveData = CreatedOwningDataRegistry->GetPlayerSaveData())
@@ -239,8 +251,60 @@ void UWidget_CreatCharacter::OnConfirmCharacterActionTriggered()
         }
     }
 
-    // 确认成功后停用自身，返回上一级
-    DeactivateWidget();
+    // 广播确认委托，由蓝图侧绑定处理后续流程（推送加载界面 → 进入游戏关卡）
+    OnCharacterConfirmed.Broadcast();
+}
+
+void UWidget_CreatCharacter::OnRandomBoundActionTriggered()
+{
+    if (!CreatedOwningDataRegistry)
+    {
+        return;
+    }
+
+    // 遍历所有选项卡中的所有列表数据对象，对 UListDataObject_String 类型随机选择一个可用选项
+    for (UListDataObject_Collection* TabCollection : CreatedOwningDataRegistry->GetRegisteredOptionsTabCollections())
+    {
+        if (!TabCollection)
+        {
+            continue;
+        }
+
+        TArray<UListDataObject_Base*> AllItems =
+            CreatedOwningDataRegistry->GetListSourceItemsBySelectedTabID(TabCollection->GetDataID());
+
+        for (UListDataObject_Base* Item : AllItems)
+        {
+            if (UListDataObject_String* StringItem = Cast<UListDataObject_String>(Item))
+            {
+                const TArray<FString>& AvailableOptions = StringItem->GetAvaiableOptionsStringArray();
+                if (AvailableOptions.Num() > 0)
+                {
+                    const int32 RandomIndex = FMath::RandRange(0, AvailableOptions.Num() - 1);
+                    StringItem->SetCurrentOptionToString(AvailableOptions[RandomIndex]);
+                }
+            }
+        }
+    }
+
+    // 刷新当前列表视图中所有已创建的条目控件，使其显示随机后的新值
+    const TArray<UObject*>& ListItems = CommonListView_OptionsList->GetListItems();
+    for (UObject* Item : ListItems)
+    {
+        if (UUserWidget* EntryWidget = CommonListView_OptionsList->GetEntryWidgetFromItem(Item))
+        {
+            if (UWidget_ListEntry_Base* EntryBase = Cast<UWidget_ListEntry_Base>(EntryWidget))
+            {
+                EntryBase->OnOwningListDataObjectSet(CastChecked<UListDataObject_Base>(Item));
+            }
+        }
+    }
+
+    // 同时刷新详情视图中当前选中项的显示
+    if (UListDataObject_Base* SelectedItem = CommonListView_OptionsList->GetSelectedItem<UListDataObject_Base>())
+    {
+        DetailView_ListEntryInfo->UpdateDetailView(SelectedItem, TryGetEntryWidgetClassName(SelectedItem));
+    }
 }
 
 void UWidget_CreatCharacter::OnOptionsTabSelected(FName TabID)

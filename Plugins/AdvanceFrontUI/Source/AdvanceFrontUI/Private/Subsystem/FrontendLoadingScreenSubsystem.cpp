@@ -149,15 +149,18 @@ bool UFrontendLoadingScreenSubsystem::ShouldShowLoadingScreen()
 {
 	const UFrontendLoadingScreenSettings* LoadingScreenSettings = GetDefault<UFrontendLoadingScreenSettings>();
 
-	if (GIsEditor && !LoadingScreenSettings->bShouldLoadingScreenInEditor)
-	{
-		return false;
-	}
+	// 编辑器模式下是否实际显示加载画面控件
+	const bool bActuallyShowingWidget = !(GIsEditor && !LoadingScreenSettings->bShouldLoadingScreenInEditor);
 
 	//check if the objects in the world need a loading screen
 	if (CheckTheNeedToShowLoadingScreen())
 	{
-		GetGameInstance()->GetGameViewportClient()->bDisableWorldRendering = true;
+		// 仅在真正需要显示控件时才禁用世界渲染
+		// 编辑器模式下虽然不显示控件，但状态机继续运转，确保 OnLoadingScreenDeactivated 在正确时机触发
+		if (bActuallyShowingWidget)
+		{
+			GetGameInstance()->GetGameViewportClient()->bDisableWorldRendering = true;
+		}
 
 		return true;
 	}
@@ -223,13 +226,20 @@ void UFrontendLoadingScreenSubsystem::TryDispalyLoadingScreenIfNone()
 {
 
 	//if there is already loading screen, return aerly if yes
-    
+
 	if (CachedCreatedLoadingScreenWidget)
 	{
 		return;
 	}
 
 	const UFrontendLoadingScreenSettings* LoadingScreenSettings = GetDefault<UFrontendLoadingScreenSettings>();
+
+	// 编辑器模式下跳过加载画面控件创建（除非显式启用），保持编辑器视口干净
+	// 但状态机仍正常运转，确保 OnLoadingScreenDeactivated 通知在世界就绪后正确触发
+	if (GIsEditor && !LoadingScreenSettings->bShouldLoadingScreenInEditor)
+	{
+		return;
+	}
 
 	TSubclassOf<UUserWidget>LoadingWidgetClass = LoadingScreenSettings->GetLoadingScreenWidgetClassChecked();
 
@@ -245,7 +255,7 @@ void UFrontendLoadingScreenSubsystem::TryDispalyLoadingScreenIfNone()
 	);
 
 	NotifyLoadingScreenVisibilityChanged(true);
-	
+
 }
 
 void UFrontendLoadingScreenSubsystem::TryRemovedLoadingScreen()
@@ -258,7 +268,7 @@ void UFrontendLoadingScreenSubsystem::TryRemovedLoadingScreen()
 
 	CachedCreatedLoadingScreenWidget.Reset();
 
-	
+
 }
 
 void UFrontendLoadingScreenSubsystem::NotifyLoadingScreenVisibilityChanged(bool bIsVisible)
@@ -275,7 +285,7 @@ void UFrontendLoadingScreenSubsystem::NotifyLoadingScreenVisibilityChanged(bool 
 			//Query if the playercontroller implements the interface, Call the function through interface to notify the loading status if yes.
 			if (PC->Implements<UFrontendUILoadScreenInterface>())
 			{
-				if (bIsVisible) 
+				if (bIsVisible)
 				{
 					IFrontendUILoadScreenInterface::Execute_OnLoadingScreenActivated(PC);
 				}
